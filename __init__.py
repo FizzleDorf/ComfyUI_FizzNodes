@@ -57,12 +57,21 @@ def is_installed(package, package_overwrite=None):
 # is_installed("onnx")
 # is_installed("onnxruntime", "onnxruntime-gpu")
 
-from .LerpNode import LerpNode #, CLIPTextSchedule #, ConditioningUpscale, ConditioningStretch, ConditioningDebug
+from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWave, SawtoothWave, TriangleWave, AbsCosWave, AbsSinWave
 #from .input import 
 #from .ABGRemover import ABGRemover
 
 NODE_CLASS_MAPPINGS = {
-    "Lerp": LerpNode,
+    "Lerp": Lerp,
+    "SinWave": SinWave,
+    "InvSinWave": InvSinWave,
+    "CosWave": CosWave,
+    "InvCosWave": InvCosWave,
+    "SquareWave":SquareWave,
+    "SawtoothWave": SawtoothWave,
+    "TriangleWave": TriangleWave,
+    "AbsCosWave": AbsCosWave,
+    "AbsSinWave": AbsSinWave,
     #"CLIPTextSchedule": CLIPTextSchedule
     #"Input": InputNode
     #"MultiAreaConditioning": MultiAreaConditioning,
