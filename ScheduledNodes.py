@@ -33,8 +33,7 @@ class PromptSchedule:
     CATEGORY = "FizzNodes/ScheduleNodes"
 
     def animate(self, text, max_frames, current_frame, clip,):
-        #format the input so it's valid json
-        inputText = str("{"+text+"}")
+        inputText = str("{"+text+"}") #format the input so it's valid json
         animation_prompts = json.loads(inputText.strip())
         return self.interpolate_prompts(animation_prompts, max_frames, int(current_frame), clip) #return a conditioning value   
     
@@ -90,7 +89,6 @@ class PromptSchedule:
     
     def interpolate_prompts(self, animation_prompts, max_frames, current_frame, clip):
         #Get prompts sorted by keyframe
-        print("animation_prompts :", animation_prompts)
         max_f = max_frames #needed for numexpr even though it doesn't look like it's in use.
         parsed_animation_prompts = {}
         for key, value in animation_prompts.items():
@@ -99,7 +97,6 @@ class PromptSchedule:
             else:  #math on the left hand side case 0:(1 + t %5), maxKeyframes/2:(5-t%2)
                 parsed_animation_prompts[int(numexpr.evaluate(key))] = value
         
-        print("parsed_animation_prompts :", parsed_animation_prompts)
         sorted_prompts = sorted(parsed_animation_prompts.items(), key=lambda item: int(item[0]))
         
         #Setup containers for interpolated prompts
@@ -153,7 +150,7 @@ class PromptSchedule:
                 if cur_prompt_series[f] == nan:
                     cur_prompt_series[f] = cur_prompt_series[f-1]
                 if nxt_prompt_series[f] == nan:
-                    nxt_prompt_series[f] = nxt_prompt_series[f-1]
+                    nxt_prompt_series[f] = cur_prompt_series[f-1]
 
             
         
