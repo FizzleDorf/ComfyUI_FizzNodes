@@ -109,8 +109,6 @@ class PromptSchedule:
         #simple array for strength values
         weight_series = [np.nan] * max_frames
 
-        print("sorted_prompts:", sorted_prompts)
-
         #in case there is only one keyed promt, set all prompts to that prompt
         if len(sorted_prompts) - 1 == 0:
             for i in range(0, len(cur_prompt_series)-1):           
@@ -120,12 +118,9 @@ class PromptSchedule:
 
         # For every keyframe prompt except the last
         for i in range(0, len(sorted_prompts) - 1):
-            print("i :", i)
             # Get current and next keyframe
             current_key = int(sorted_prompts[i][0])
-            print("curKey:",current_key)
             next_key = int(sorted_prompts[i + 1][0])
-            print("nxtKey:", next_key)
             # Ensure there's no weird ordering issues or duplication in the animation prompts
             # (unlikely because we sort above, and the json parser will strip dupes)
             if current_key >= next_key:
@@ -157,7 +152,6 @@ class PromptSchedule:
                 #make sure the prompt is set to what it was last if there isn't any in the series.
                 if cur_prompt_series[f] == nan:
                     cur_prompt_series[f] = cur_prompt_series[f-1]
-                    print("cur_prompt_series[f]:",cur_prompt_series[f])
                 if nxt_prompt_series[f] == nan:
                     nxt_prompt_series[f] = nxt_prompt_series[f-1]
 
@@ -167,26 +161,18 @@ class PromptSchedule:
         cur_prompt_series[current_frame] = self.prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame)
         nxt_prompt_series[current_frame] = self.prepare_prompt(nxt_prompt_series[current_frame], max_frames, current_frame)       
 
-        print("cur_prompt_series[current_frame]: ",cur_prompt_series[current_frame])
-        print("nxt_prompt_series[current_frame]: ",nxt_prompt_series[current_frame])
+        #Show the to/from prompts with evaluated expressions for transparency.
+        print("current prompt: ",cur_prompt_series[current_frame], " -> next prompt: ", nxt_prompt_series[current_frame], "strength : ", weight_series[current_frame])
 
         #Output methods depending if the prompts are the same or if the current frame is a keyframe.
         #if it is an in-between frame and the prompts differ, compostable diffusion will be performed.
         if str(cur_prompt_series[current_frame]) == str(nxt_prompt_series[current_frame]):
-            #Debug
-            print("both equal, only curr")
             return ([[clip.encode(str(cur_prompt_series[current_frame])), {}]], )
         if weight_series[current_frame] == 1:
-            #Debug
-            print("only curr")
             return ([[clip.encode(str(cur_prompt_series[current_frame])), {}]], )
         if weight_series[current_frame] == 0:
-            #Debug
-            print("only next")
             return ([[clip.encode(str(nxt_prompt_series[current_frame])), {}]], )
         else:
-            #Debug
-            print("both")
             return self.addWeighted(list([[clip.encode(str(cur_prompt_series[current_frame])), {}]], ), list([[clip.encode(str(nxt_prompt_series[current_frame])), {}]], ), weight_series[current_frame])
 
 
