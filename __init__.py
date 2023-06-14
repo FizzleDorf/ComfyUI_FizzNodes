@@ -53,13 +53,8 @@ def is_installed(package, package_overwrite=None):
         if result.returncode != 0:
             print(f"Couldn't install\nCommand: {command}\nError code: {result.returncode}")
 
-# is_installed("huggingface_hub")
-# is_installed("onnx")
-# is_installed("onnxruntime", "onnxruntime-gpu")
-
 from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWave, SawtoothWave, TriangleWave, AbsCosWave, AbsSinWave
-from .ScheduledNodes import ValueSchedule#, PromptSchedule
-#from .ABGRemover import ABGRemover
+from .ScheduledNodes import ValueSchedule, PromptSchedule
 
 NODE_CLASS_MAPPINGS = {
     "Lerp": Lerp,
@@ -72,7 +67,7 @@ NODE_CLASS_MAPPINGS = {
     "TriangleWave": TriangleWave,
     "AbsCosWave": AbsCosWave,
     "AbsSinWave": AbsSinWave,
-    #"PromptSchedule": PromptSchedule,
+    "PromptSchedule": PromptSchedule,
     "ValueSchedule": ValueSchedule,
 }
 
