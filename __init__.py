@@ -58,7 +58,7 @@ def is_installed(package, package_overwrite=None):
 # is_installed("onnxruntime", "onnxruntime-gpu")
 
 from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWave, SawtoothWave, TriangleWave, AbsCosWave, AbsSinWave
-#from .input import 
+from .ScheduledNodes import ValueSchedule#, PromptSchedule
 #from .ABGRemover import ABGRemover
 
 NODE_CLASS_MAPPINGS = {
@@ -72,12 +72,8 @@ NODE_CLASS_MAPPINGS = {
     "TriangleWave": TriangleWave,
     "AbsCosWave": AbsCosWave,
     "AbsSinWave": AbsSinWave,
-    #"CLIPTextSchedule": CLIPTextSchedule
-    #"Input": InputNode
-    #"MultiAreaConditioning": MultiAreaConditioning,
-    #"ConditioningUpscale": ConditioningUpscale,
-    #"ConditioningStretch": ConditioningStretch,
-    #"ABGRemover": ABGRemover,
+    #"PromptSchedule": PromptSchedule,
+    "ValueSchedule": ValueSchedule,
 }
 
 print('\033[34mFizzleDorf Custom Nodes: \033[92mLoaded\033[0m')
