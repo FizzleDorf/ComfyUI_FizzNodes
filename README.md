@@ -117,4 +117,4 @@ TODO:
 - [ ] add prepend/append inputs for prompt schedule
 - [ ] prompt weight variables
 - [ ] edit readme (including examples)
-- [ ]add more to this list
+- [ ] add more to this list
