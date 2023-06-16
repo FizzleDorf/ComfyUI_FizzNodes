@@ -1,6 +1,6 @@
 
 # FizzNodes
-Custom animation and utility nodes for [Comfyui](https://github.com/comfyanonymous/ComfyUI)
+Scheduled prompts, scheduled float values and wave function nodes for animations and utility. compatable with https://www.framesync.xyz/ and https://www.chigozie.co.uk/keyframe-string-generator/ for audio synced animations for [Comfyui](https://github.com/comfyanonymous/ComfyUI).
 
 Example: *still in the oven*
 
