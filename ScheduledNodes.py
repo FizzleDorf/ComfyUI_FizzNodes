@@ -1,7 +1,6 @@
 #These nodes were made using code from the Deforum extension for A1111 webui
 #You can find the project here: https://github.com/deforum-art/sd-webui-deforum
-from cmath import nan
-from inspect import currentframe
+import math
 import numexpr
 import torch
 import numpy as np
@@ -70,7 +69,6 @@ class PromptSchedule:
             if len(w_raw) < 3:
                 print('the value inside `-characters cannot represent a math function')
                 return 1
-            print(float(numexpr.evaluate(w_raw[1:-1])))
             return float(numexpr.evaluate(w_raw[1:-1]))
     
         
@@ -84,7 +82,6 @@ class PromptSchedule:
             parsed_string = matched_string.replace('t', f'{frame_idx}').replace("max_f", f"{max_f}").replace('`', '') #replace t, max_f and `` respectively
             parsed_value = numexpr.evaluate(parsed_string)
             prompt_parsed = prompt_parsed.replace(matched_string, str(parsed_value))
-        print(prompt_parsed.strip())
         return prompt_parsed.strip()
     
     def interpolate_prompts(self, animation_prompts, max_frames, current_frame, clip):
@@ -118,6 +115,8 @@ class PromptSchedule:
             # Get current and next keyframe
             current_key = int(sorted_prompts[i][0])
             next_key = int(sorted_prompts[i + 1][0])
+
+
             # Ensure there's no weird ordering issues or duplication in the animation prompts
             # (unlikely because we sort above, and the json parser will strip dupes)
             if current_key >= next_key:
@@ -135,31 +134,23 @@ class PromptSchedule:
                 next_weight = weight_step * (f - current_key)
                 current_weight = 1 - next_weight
                 
-                print(current_key)
-
                 #add the appropriate prompts and weights to their respective containers.
                 cur_prompt_series[f] = ''
                 nxt_prompt_series[f] = ''
                 weight_series[f] = 0.0
-                
+
                 cur_prompt_series[f] += current_prompt
                 nxt_prompt_series[f] += next_prompt
-                weight_series[f] += current_weight  
 
-                #make sure the prompt is set to what it was last if there isn't any in the series.
-                if cur_prompt_series[f] == nan:
-                    cur_prompt_series[f] = cur_prompt_series[f-1]
-                if nxt_prompt_series[f] == nan:
-                    nxt_prompt_series[f] = cur_prompt_series[f-1]
+                weight_series[f] += current_weight
 
-            
-        
+
         #Evaluate the current and next prompt's expressions
         cur_prompt_series[current_frame] = self.prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame)
         nxt_prompt_series[current_frame] = self.prepare_prompt(nxt_prompt_series[current_frame], max_frames, current_frame)       
 
         #Show the to/from prompts with evaluated expressions for transparency.
-        print("current prompt: ",cur_prompt_series[current_frame], " -> next prompt: ", nxt_prompt_series[current_frame], "strength : ", weight_series[current_frame])
+        print(" current prompt: ",cur_prompt_series[current_frame], "\n","next prompt: ", nxt_prompt_series[current_frame], "\n", "strength : ", weight_series[current_frame])
 
         #Output methods depending if the prompts are the same or if the current frame is a keyframe.
         #if it is an in-between frame and the prompts differ, compostable diffusion will be performed.
@@ -171,7 +162,6 @@ class PromptSchedule:
             return ([[clip.encode(str(nxt_prompt_series[current_frame])), {}]], )
         else:
             return self.addWeighted(list([[clip.encode(str(cur_prompt_series[current_frame])), {}]], ), list([[clip.encode(str(nxt_prompt_series[current_frame])), {}]], ), weight_series[current_frame])
-
 
 #This node parses the user's test input into interpolated floats. 
 #Expressions can be input and evaluated.            
@@ -196,7 +186,7 @@ class ValueSchedule:
 
     def get_inbetweens(self, key_frames, max_frames, integer=False, interp_method='Linear', is_single_string = False):
         key_frame_series = pd.Series([np.nan for a in range(max_frames)])
-        max_f = max_frames -1
+        max_f = max_frames -1 #needed for numexpr even though it doesn't look like it's in use.
         value_is_number = False
         for i in range(0, max_frames):
             if i in key_frames:
@@ -233,7 +223,7 @@ class ValueSchedule:
         frames = dict()
         for match_object in string.split(","):
             frameParam = match_object.split(":")
-            max_f = max_frames -1
+            max_f = max_frames -1 #needed for numexpr even though it doesn't look like it's in use.
             frame = int(self.sanitize_value(frameParam[0])) if check_is_number(self.sanitize_value(frameParam[0].strip())) else int(numexpr.evaluate(frameParam[0].strip().replace("'","",1).replace('"',"",1)[::-1].replace("'","",1).replace('"',"",1)[::-1]))
             frames[frame] = frameParam[1].strip()
         if frames == {} and len(string) != 0:
