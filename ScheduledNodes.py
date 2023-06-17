@@ -1,7 +1,6 @@
 #These nodes were made using code from the Deforum extension for A1111 webui
 #You can find the project here: https://github.com/deforum-art/sd-webui-deforum
-import math
-from pickle import FALSE
+
 import numexpr
 import torch
 import numpy as np
@@ -168,7 +167,7 @@ class PromptSchedule:
 #This node is the same as above except it takes 
 #a conditioning value and a GLIGEN model to work 
 #with GLIGEN nodes. Gligen code adapted from Comfyui.
-"""
+
 class PromptScheduleGLIGEN:
     @classmethod
     def INPUT_TYPES(s):
@@ -177,7 +176,7 @@ class PromptScheduleGLIGEN:
                             "conditioning_to":("CONDITIONING",),
                             "gligen_textbox_model": ("GLIGEN", ),
                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
-                            "current_frame": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                            "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                             "width": ("INT", {"default": 64, "min": 8, "max": MAX_RESOLUTION, "step": 8}),
                             "height": ("INT", {"default": 64, "min": 8, "max": MAX_RESOLUTION, "step": 8}),
                             "x": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
@@ -318,7 +317,7 @@ class PromptScheduleGLIGEN:
             return ((str(nxt_prompt_series[current_frame])), np.nan, np.nan)
         else:
             return (str(cur_prompt_series[current_frame]), str(nxt_prompt_series[current_frame]), weight_series[current_frame])
-"""
+
 #This node parses the user's test input into 
 #interpolated floats. Expressions can be input 
 #and evaluated.            
