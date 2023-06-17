@@ -75,7 +75,7 @@ class PromptSchedule:
         return {"required": {"text": ("STRING", {"multiline": True}), 
                             "clip": ("CLIP", ),
                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
-                            "current_frame": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),}}
+                            "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),}}
                             
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "animate"
@@ -85,7 +85,7 @@ class PromptSchedule:
     def animate(self, text, max_frames, current_frame, clip,):
         inputText = str("{"+text+"}") #format the input so it's valid json
         animation_prompts = json.loads(inputText.strip())
-        return self.interpolate_prompts(animation_prompts, max_frames, int(current_frame), clip) #return a conditioning value   
+        return self.interpolate_prompts(animation_prompts, max_frames, current_frame, clip) #return a conditioning value   
     
     def interpolate_prompts(self, animation_prompts, max_frames, current_frame, clip): #parse the conditioning strength and determine in-betweens.
         #Get prompts sorted by keyframe
@@ -327,7 +327,7 @@ class ValueSchedule:
     def INPUT_TYPES(s):
         return {"required": {"text": ("STRING", {"multiline": True}),
                              "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
-                             "current_frame": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
     RETURN_TYPES = ("FLOAT", "INT")
     FUNCTION = "animate"
@@ -336,7 +336,7 @@ class ValueSchedule:
     
     def animate(self, text, max_frames, current_frame,):
         t = self.get_inbetweens(self.parse_key_frames(text, max_frames), max_frames)
-        cFrame = int(current_frame) #current_frame is currently recieved as a float hence the cast to int
+        cFrame = current_frame
         return (t[cFrame],int(t[cFrame]),)
 
     def sanitize_value(self, value):

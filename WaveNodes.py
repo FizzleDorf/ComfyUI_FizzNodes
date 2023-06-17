@@ -5,9 +5,9 @@ class Lerp:
     def INPUT_TYPES(s):
         return {"required": {"num_Images": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 10.0, "step": 0.01}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT",)
     FUNCTION = "lerp"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -15,7 +15,7 @@ class Lerp:
     def lerp(self, num_Images, strength, current_frame):
         step = strength/num_Images
         output = strength - (step * current_frame)
-        return (output, )
+        return (output, int(output),)
         
 class SinWave:
     @classmethod
@@ -24,9 +24,9 @@ class SinWave:
                              "amplitude": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "y_translation": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT","INT",)
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -34,7 +34,7 @@ class SinWave:
     def Wave(self, phase, amplitude, x_translation, y_translation, current_frame):
         output = (y_translation+(amplitude*(np.sin((2*np.pi*current_frame/phase-x_translation)))))
         print(output)
-        return (output, )
+        return (output, int(output),)
 
 class InvSinWave:
     @classmethod
@@ -43,9 +43,9 @@ class InvSinWave:
                              "amplitude": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "y_translation": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT")
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -53,7 +53,7 @@ class InvSinWave:
     def Wave(self, phase, amplitude, x_translation, y_translation, current_frame):
         output = (y_translation+(amplitude*-(np.sin(-1*(2*np.pi*current_frame/phase-x_translation)))))
         print(output)
-        return (output, )
+        return (output, int(output),)
         
 class CosWave:
     @classmethod
@@ -62,9 +62,9 @@ class CosWave:
                              "amplitude": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "y_translation": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT", )
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -72,7 +72,7 @@ class CosWave:
     def Wave(self, phase, amplitude, x_translation, y_translation, current_frame):
         output = (y_translation+(amplitude*(np.cos((2*np.pi*current_frame/phase-x_translation)))))
         print(output)
-        return (output, )
+        return (output, int(output),)
 
 class InvCosWave:
     @classmethod
@@ -81,9 +81,9 @@ class InvCosWave:
                              "amplitude": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "y_translation": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT", )
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -91,7 +91,7 @@ class InvCosWave:
     def Wave(self, phase, amplitude, x_translation, y_translation, current_frame):
         output = (y_translation+(amplitude*-(np.cos(-1*(2*np.pi*current_frame/phase-x_translation)))))
         print(output)
-        return (output, )
+        return (output, int(output),)
 
 class SquareWave:
     @classmethod
@@ -100,17 +100,17 @@ class SquareWave:
                              "amplitude": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "y_translation": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT",)
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
 
     def Wave(self, phase, amplitude, x_translation, y_translation, current_frame):
-        output = (y_translation+(step_increment*0**0**(0-np.sin((np.pi*current_frame/phase-x_translation)))))
+        output = (y_translation+(amplitude*0**0**(0-np.sin((np.pi*current_frame/phase-x_translation)))))
         print(output)
-        return (output, )
+        return (output, int(output),)
 
 class SawtoothWave:
     @classmethod
@@ -119,9 +119,9 @@ class SawtoothWave:
                              "step_increment": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "start_value": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT", )
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -129,7 +129,7 @@ class SawtoothWave:
     def Wave(self, phase, step_increment, x_translation, start_value, current_frame):
         output = (start_value+(step_increment*(current_frame%phase)-x_translation))
         print(output)
-        return (output, )
+        return (output, int(output),)
 
 class TriangleWave:
     @classmethod
@@ -138,9 +138,9 @@ class TriangleWave:
                              "amplitude": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "y_translation": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT",)
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -148,7 +148,7 @@ class TriangleWave:
     def Wave(self, phase, amplitude, x_translation, y_translation, current_frame):
         output = (y_translation+amplitude/np.pi*(np.arcsin(np.sin(2*np.pi/phase*current_frame-x_translation))))
         print(output)
-        return (output, )
+        return (output, int(output),)
 
 class AbsCosWave:
     @classmethod
@@ -157,9 +157,9 @@ class AbsCosWave:
                              "amplitude": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "max_value": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT")
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -167,7 +167,7 @@ class AbsCosWave:
     def Wave(self, phase, amplitude, x_translation, max_value, current_frame):
         output = (max_value-(np.abs(np.cos(current_frame/phase))*amplitude))
         print(output)
-        return (output, )
+        return (output, int(output),)
 
 class AbsSinWave:
     @classmethod
@@ -176,9 +176,9 @@ class AbsSinWave:
                              "amplitude": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.1}),
                              "x_translation": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              "max_value": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 9999.0, "step": 0.05}),
-                             "current_frame": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 1.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
                              }}
-    RETURN_TYPES = ("FLOAT",)
+    RETURN_TYPES = ("FLOAT", "INT")
     FUNCTION = "Wave"
     
     CATEGORY = "FizzNodes/WaveNodes"
@@ -186,4 +186,4 @@ class AbsSinWave:
     def Wave(self, phase, amplitude, x_translation, max_value, current_frame):
         output = (max_value-(np.abs(np.sin(current_frame/phase))*amplitude))
         print(output)
-        return (output, )
+        return (output, int(output),)
