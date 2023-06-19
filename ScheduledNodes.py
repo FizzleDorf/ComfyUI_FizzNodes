@@ -51,14 +51,14 @@ def parse_weight(match, frame=0, max_frames=0) -> float: #calculate weight steps
                 return 1
             return float(numexpr.evaluate(w_raw[1:-1]))
 
-def prepare_prompt(prompt_series, max_frames, frame_idx): #calculate expressions from the text input and return a string
+def prepare_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1 = 0, prompt_weight_2 = 0, prompt_weight_3 = 0, prompt_weight_4 = 0): #calculate expressions from the text input and return a string
         max_f = max_frames - 1
         pattern = r'`.*?`' #set so the expression will be read between two backticks (``)
         regex = re.compile(pattern)
         prompt_parsed = str(prompt_series)
         for match in regex.finditer(prompt_parsed):
             matched_string = match.group(0)
-            parsed_string = matched_string.replace('t', f'{frame_idx}').replace("max_f", f"{max_f}").replace('`', '') #replace t, max_f and `` respectively
+            parsed_string = matched_string.replace('t', f'{frame_idx}').replace("pw_a", f"prompt_weight_1").replace("pw_b", f"prompt_weight_2").replace("pw_c", f"prompt_weight_3").replace("pw_d", f"prompt_weight_4").replace("max_f", f"{max_f}").replace('`', '') #replace t, max_f and `` respectively
             parsed_value = numexpr.evaluate(parsed_string)
             prompt_parsed = prompt_parsed.replace(matched_string, str(parsed_value))
         return prompt_parsed.strip()
@@ -74,19 +74,26 @@ class PromptSchedule:
         return {"required": {"text": ("STRING", {"multiline": True}), 
                             "clip": ("CLIP", ),
                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
-                            "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),}}
-                            
+                            "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),},
+               "optional": {"pre_text": ("STRING", {"multiline": False}),
+                            "app_text": ("STRING", {"multiline": False}),
+                            "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1}),
+                            "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1}),
+                            "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1}),
+                            "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1}),
+                            }}
+    
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes/ScheduleNodes"
 
-    def animate(self, text, max_frames, current_frame, clip,):
+    def animate(self, text, max_frames, current_frame, clip, pw_a = 0, pw_b = 0, pw_c = 0, pw_d = 0, pre_text = '', app_text = ''):
         inputText = str("{"+text+"}") #format the input so it's valid json
         animation_prompts = json.loads(inputText.strip())
-        return self.interpolate_prompts(animation_prompts, max_frames, current_frame, clip) #return a conditioning value   
+        return self.interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_text, app_text, pw_a, pw_b, pw_c, pw_d) #return a conditioning value   
     
-    def interpolate_prompts(self, animation_prompts, max_frames, current_frame, clip): #parse the conditioning strength and determine in-betweens.
+    def interpolate_prompts(self, animation_prompts, max_frames, current_frame, clip, pre_text, app_text, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4): #parse the conditioning strength and determine in-betweens.
         #Get prompts sorted by keyframe
         max_f = max_frames #needed for numexpr even though it doesn't look like it's in use.
         parsed_animation_prompts = {}
@@ -109,8 +116,8 @@ class PromptSchedule:
         if len(sorted_prompts) - 1 == 0:
             for i in range(0, len(cur_prompt_series)-1):           
                 current_prompt = sorted_prompts[0][1]           
-                cur_prompt_series[i] = current_prompt
-                nxt_prompt_series[i] = current_prompt
+                cur_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
+                nxt_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
 
         # For every keyframe prompt except the last
         for i in range(0, len(sorted_prompts) - 1):
@@ -141,14 +148,14 @@ class PromptSchedule:
                 nxt_prompt_series[f] = ''
                 weight_series[f] = 0.0
 
-                cur_prompt_series[f] += current_prompt
-                nxt_prompt_series[f] += next_prompt
+                cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
+                nxt_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
 
                 weight_series[f] += current_weight
         
         #Evaluate the current and next prompt's expressions
-        cur_prompt_series[current_frame] = prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame)
-        nxt_prompt_series[current_frame] = prepare_prompt(nxt_prompt_series[current_frame], max_frames, current_frame)       
+        cur_prompt_series[current_frame] = prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)
+        nxt_prompt_series[current_frame] = prepare_prompt(nxt_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)       
 
         #Show the to/from prompts with evaluated expressions for transparency.
         print(" current prompt: ",cur_prompt_series[current_frame], "\n","next prompt: ", nxt_prompt_series[current_frame], "\n", "strength : ", weight_series[current_frame])
@@ -218,13 +225,15 @@ class PromptScheduleGLIGEN:
         #cond_gligen = (cond, {'gligen': gligen}) # combine the averaged result and gligen
         return (c, )
 
-    def appendMultiple(self, conditioning_to, clip, gligen_textbox_model, text1, text2, width, height, x, y, weight): # returns a CONDITIONING value from addWeighted
+    def appendMultiple(self, conditioning_to, clip, gligen_textbox_model, text_to, text_from, width, height, x, y, weight): # returns a CONDITIONING value from addWeighted
         c = []
-        print("append multiple: \n",text1,"\n", text2)
-        cond_from, cond_pooled = clip.encode_from_tokens(clip.tokenize(text1), return_pooled=True)
+        print("append multiple: \n",text_to,"\n", text_from)
+        cond_to, cond_pooled_to = clip.encode_from_tokens(clip.tokenize(text_to), return_pooled=True)
+        cond_from, cond_pooled_from = clip.encode_from_tokens(clip.tokenize(text_from), return_pooled=True)
+        cond_avr = (addWeighted(list(cond_pooled_to), list(cond_pooled_from), weight),)
         for t in conditioning_to:
             n = [t[0], t[1].copy()]
-            position_params = [(cond_pooled, height // 8, width // 8, y // 8, x // 8)]
+            position_params = [(cond_avr, height // 8, width // 8, y // 8, x // 8)]
             prev = []
             if "gligen" in n[1]:
                 prev = n[1]['gligen'][2]
@@ -232,12 +241,12 @@ class PromptScheduleGLIGEN:
             n[1]['gligen'] = ("position", gligen_textbox_model, prev + position_params)
             c.append(n)
 
-        cond_to, gligen = c[0][0], c[0][1]['gligen'] # separate the tensor_to
-        cond_from = ([[clip.encode(str(text2)), {}]], ) # encode second prompt
-        cond_avr = (addWeighted(list(cond_to), list(cond_from), weight),) # perform compostable diffusion
-        cond_gligen = (cond_avr, {'gligen': gligen}) # combine the averaged result and gligen
+        #cond_to, gligen = c[0][0], c[0][1]['gligen'] # separate the tensor_to
+        #cond_from = ([[clip.encode(str(text2)), {}]], ) # encode second prompt
+        # # perform compostable diffusion
+        #cond_gligen = (cond_avr, {'gligen': gligen}) # combine the averaged result and gligen
 
-        return (cond_gligen,)
+        return (c,)
         
     def interpolate_prompts(self, animation_prompts, max_frames, current_frame, clip): #parse the conditioning strength and determine in-betweens.
         #Get prompts sorted by keyframe
