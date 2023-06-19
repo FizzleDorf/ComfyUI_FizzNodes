@@ -121,11 +121,16 @@ TODO:
 - [ ] add more to this list
 
 -----
-##Acknowledgments
-A special thanks to:
-The developers of Deforum for providing code for these nodes and being overall awesome people!
-Comfyanonamous and the rest of the ComfyUI contributors for a fantastic UI!
-All the friends I met along the way that motivate me into action!
-and you the user! I hope you have fun using these nodes and exploring latent space.
+## Acknowledgments
+
+**A special thanks to:**
+
+-The developers of [Deforum](https://github.com/deforum-art/sd-webui-deforum) for providing code for these nodes and being overall awesome people!
+
+-Comfyanonamous and the rest of the [ComfyUI](https://github.com/comfyanonymous/ComfyUI/tree/master) contributors for a fantastic UI!
+
+-All the friends I met along the way that motivate me into action!
+
+-and you the user! I hope you have fun using these nodes and exploring latent space.
 
 
