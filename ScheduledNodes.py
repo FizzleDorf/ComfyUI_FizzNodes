@@ -149,7 +149,7 @@ class PromptSchedule:
                 weight_series[f] = 0.0
 
                 cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
-                nxt_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
+                nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
 
                 weight_series[f] += current_weight
         
