@@ -1,6 +1,6 @@
 
 # FizzNodes
-Scheduled prompts, scheduled float values and wave function nodes for animations and utility. compatable with https://www.framesync.xyz/ and https://www.chigozie.co.uk/keyframe-string-generator/ for audio synced animations for [Comfyui](https://github.com/comfyanonymous/ComfyUI).
+Scheduled prompts, scheduled float values and wave function nodes for animations and utility. compatable with https://www.framesync.xyz/ and https://www.chigozie.co.uk/keyframe-string-generator/ for audio synced animations in [Comfyui](https://github.com/comfyanonymous/ComfyUI).
 
 Example: *still in the oven*
 
@@ -114,7 +114,23 @@ Link | Description
 
 TODO:
 - [ ] fix runoff past last keyframe
-- [ ] add prepend/append inputs for prompt schedule
-- [ ] prompt weight variables
-- [ ] edit readme (including examples)
+- [x] add prepend/append inputs for prompt schedule
+- [x] prompt weight variables
+- [ ] edit readme (including examples, explain new features)
+- [ ] Node flow method
 - [ ] add more to this list
+
+-----
+## Acknowledgments
+
+**A special thanks to:**
+
+-The developers of [Deforum](https://github.com/deforum-art/sd-webui-deforum) for providing code for these nodes and being overall awesome people!
+
+-Comfyanonamous and the rest of the [ComfyUI](https://github.com/comfyanonymous/ComfyUI/tree/master) contributors for a fantastic UI!
+
+-All the friends I met along the way that motivate me into action!
+
+-and you the user! I hope you have fun using these nodes and exploring latent space.
+
+
