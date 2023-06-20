@@ -118,6 +118,10 @@ class PromptSchedule:
                 current_prompt = sorted_prompts[0][1]           
                 cur_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
                 nxt_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
+        
+        #Initialized outside of loop for nan check
+        current_key = 0
+        next_key = 0
 
         # For every keyframe prompt except the last
         for i in range(0, len(sorted_prompts) - 1):
@@ -153,6 +157,25 @@ class PromptSchedule:
 
                 weight_series[f] += current_weight
         
+        current_key = current_key
+        print(current_key)
+        next_key = max_frames
+        print(next_key)
+        #second loop to catch any nan runoff
+        for f in range(current_key, next_key):
+                next_weight = weight_step * (f - current_key)
+                current_weight = 1 - next_weight
+                
+                #add the appropriate prompts and weights to their respective containers.
+                cur_prompt_series[f] = ''
+                nxt_prompt_series[f] = ''
+                weight_series[f] = 0.0
+
+                cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
+                nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
+
+                weight_series[f] += current_weight
+
         #Evaluate the current and next prompt's expressions
         cur_prompt_series[current_frame] = prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)
         nxt_prompt_series[current_frame] = prepare_prompt(nxt_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)       
