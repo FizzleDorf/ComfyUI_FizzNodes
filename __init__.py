@@ -54,7 +54,7 @@ def is_installed(package, package_overwrite=None):
             print(f"Couldn't install\nCommand: {command}\nError code: {result.returncode}")
 
 from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWave, SawtoothWave, TriangleWave, AbsCosWave, AbsSinWave
-from .ScheduledNodes import ValueSchedule, PromptSchedule#, PromptScheduleGLIGEN
+from .ScheduledNodes import ValueSchedule, PromptSchedule, PromptScheduleNodeFlow, PromptScheduleNodeFlowEnd #, PromptScheduleGLIGEN
 
 NODE_CLASS_MAPPINGS = {
     "Lerp": Lerp,
@@ -69,6 +69,8 @@ NODE_CLASS_MAPPINGS = {
     "AbsSinWave": AbsSinWave,
     "PromptSchedule": PromptSchedule,
     "ValueSchedule": ValueSchedule,
+    "PromptScheduleNodeFlow": PromptScheduleNodeFlow,
+    "PromptScheduleNodeFlowEnd": PromptScheduleNodeFlowEnd,
     #"PromptScheduleGLIGEN": PromptScheduleGLIGEN,
 }
 
