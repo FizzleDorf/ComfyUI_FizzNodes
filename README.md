@@ -1,49 +1,104 @@
 
 # FizzNodes
-Scheduled prompts, scheduled float values and wave function nodes for animations and utility. compatable with https://www.framesync.xyz/ and https://www.chigozie.co.uk/keyframe-string-generator/ for audio synced animations in [Comfyui](https://github.com/comfyanonymous/ComfyUI).
+Scheduled prompts, scheduled float/int values and wave function nodes for animations and utility. compatable with https://www.framesync.xyz/ and https://www.chigozie.co.uk/keyframe-string-generator/ for audio synced animations in [Comfyui](https://github.com/comfyanonymous/ComfyUI).
 
 Example: *still in the oven*
 
+-----
 
+### Table of Contents  
+- 1.0 [Installation](https://github.com/FizzleDorf/ComfyUI_FizzNodes#installation)
+
+- 2.0 [Important Notes on Operation](https://github.com/FizzleDorf/ComfyUI_FizzNodes#important)
+
+- 3.0 [Scheduled Nodes](https://github.com/FizzleDorf/ComfyUI_FizzNodes#schedule-nodes)
+
+  - 3.1 [Variables and Expressions](https://github.com/FizzleDorf/ComfyUI_FizzNodes#variables-and-expressions)
+
+  - 3.2 [Promptschedule](https://github.com/FizzleDorf/ComfyUI_FizzNodes#promptschedule)
+
+  - 3.3 [ValueSchedule](https://github.com/FizzleDorf/ComfyUI_FizzNodes#valuechedule)
+
+- 4.0 [Wave Nodes](https://github.com/FizzleDorf/ComfyUI_FizzNodes#wavenodes)
+
+- 5.0 [Helpful Tools](https://github.com/FizzleDorf/ComfyUI_FizzNodes#helpful-tools)
+
+- 6.0 [Acknowledgements](https://github.com/FizzleDorf/ComfyUI_FizzNodes#acknowledgments)
+  
 -----
 
 ## Installation
-simply clone the repo into the custom_nodes directory with this command:
+
+For the easiest install experience, install the [Comfyui Manager](https://github.com/ltdrdata/ComfyUI-Manager) and use that to automate the installation process.
+Otherwise, to manually install, simply clone the repo into the custom_nodes directory with this command:
 ```
 git clone https://github.com/FizzleDorf/ComfyUI_FizzNodes.git
 ```
-The nodes will can be accessed in the FizzNodes subsection of the node menu
+and install the requirements using:
+```
+pip install -r requirements.txt
+```
 
-![Fizznodes menu](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/e07fedba-648c-4300-a6ac-61873b1501ab)
+Example | Instructions
+---|---
+![Fizznodes menu](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/e07fedba-648c-4300-a6ac-61873b1501ab)|The nodes will can be accessed in the FizzNodes section of the node menu. You can also use the node search to find the nodes you are looking for. 
+
+-----
+
+TODO:
+- [x] fix runoff past last keyframe
+- [x] add prepend/append inputs for prompt schedule
+- [x] prompt weight variables
+- [x] edit readme (including examples, explain new features)
+- [ ] Node flow method
+- [ ] Gligen support
+- [ ] add more to this list
 
 -----
 
 ## Important!
 
-All of these nodes require the primitive nodes incremental output in the current_frame input. To set this up, simply right click on the node and convert current_frame to an input. Then, double click the input to add a primitive node. Set the node value control to increment and the value to 0. The primitive should look like this:
+Instructions | Example
+---|---
+All of these nodes require the primitive nodes incremental output in the current_frame input. To set this up, simply right click on the node and convert current_frame to an input. Then, double click the input to add a primitive node. Set the node value control to increment and the value to 0. The primitive should look like this: | ![primitiveNode](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/c78063c8-8542-484b-a15c-1f47a8c2d489) 
+The text inputs ```pre_text``` and ```app_text``` are for appending or prepending text to every scheduled prompt. The primitive that is made from double clicking the input is single line and might be a little inconvenient. I reccomend using the TextBox from these [modded nodes](https://github.com/Derfuu/Derfuu_ComfyUI_ModdedNodes) as the input for either of these inputs. This node suite also has a lot of math operator nodes that can come in handy when using these nodes. | ![text box](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/df865a30-cf1c-4479-9ca4-c319486aabc5)
+The Prompt Scheduler has multiple options that need to be converted to an input in order to properly use them. The Prompt weight channels (```pw_a```, ```pw_b```, etc.) can take in the result from a Value scheduler giving full control of the token weight over time. | ![value example](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/24dbd807-920c-40ea-bb9c-8b8ce556402d)
+An example setup that includes prepended text and two prompt weight variables would look something like this: | ![example setup](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/24156699-dfce-487b-a1a7-009d6c7a8507)
 
-![primitiveNode](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/b55d041b-d5d1-487a-8994-c2ca95baf5f1)
+"Note: I used [keyframe string generator](https://www.chigozie.co.uk/keyframe-string-generator/) to manually set the animation curves in the value schedule."
 
 -----
 
 ## Schedule Nodes
 
-![ScheduleNodes](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/36c4ff23-7bd1-48e2-9fb9-2549e9764535)
+Example | Description
+----- | -----
+![ScheduleNodes](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/36c4ff23-7bd1-48e2-9fb9-2549e9764535) | These nodes are a convenient way to schedule values over time. This includes anything with a float input, int input, prompts and prompt weights. This is done by interpolating the values at each keyframe and evaluating the expressions used in the inputs over time.
 
 
-These nodes are a convenient way to schedule values over time. This includes anything with a float input, prompts and prompt weights. This is done by interpolating the values at each keyframe and evaluating the expressions used in the inputs.
+Both nodes contain a max_frames value that determines the size of the series. This only needs to be equal to or higher than your last keyed prompt/value.
 
-Both nodes contail a max_frames value that determines the size of the series. This only needs to be higher than your last keyed prompt/value. Currently, if your current frame goes past your last keyed prompt/value, it will return nan. I'll be looking into a solution for this in time so for now make sure there is a keyed prompt/value on your last frame.
+-----
 
 ### Variables and expressions
 
-For expressions, you can see what is available to use here: [supported numexpr operators and expressions](https://numexpr.readthedocs.io/en/latest/user_guide.html#supported-operators)
+For expressions, you can check out [supported numexpr operators and expressions](https://numexpr.readthedocs.io/en/latest/user_guide.html#supported-operators) and use them in your prompt.
 
 Both nodes use the same variables:
 Variable | Definition 
 --- | --- 
-t | current frame
-max_f | max frames
+```t``` | current frame
+```max_f``` | max frames
+
+Prompt Schedule Only Variables include:
+Variable | Definition 
+--- | --- 
+```pw_a``` | prompt weight A
+```pw_b``` | prompt weight B
+```pw_c``` | prompt weight C
+```pw_d``` | prompt weight D
+
+The value of these prompt weight variables depends on what you give as an input.
 
 -----
 
@@ -53,28 +108,44 @@ This node interpolates prompts and automates prompt weights over time using expr
 To keyframe a prompt, you need to format it correctly.
 
 ```
-"#":"(prompt:`expression`)"
+"#":"(prompt:`exp`)"
 ```
 
-where ```#``` is the keyframe (as a whole number), ```prompt``` is your prompt, and ```expression``` is your expression.
+where ```#``` is the keyframe (as a whole number), ```prompt``` is your prompt, and ```exp``` is your expression.
 
 The keyframe number needs to be enclosed by quotations (```""```) followed by a colon (```:```).
 Your prompt also needs to be enclosed in quotations (```""```).
 If you plan on having another keyframed prompt after this one, you need to place a comma (```,```) after the closing quote of your last prompt. If you don't do this you will get an error. If it is your last prompt do not place a comma as this will result in an error as well.
 
-**Expressions in the prompt schedule must be enclosed using back ticks: ``` `` ``` not apostrpophes: ```''``` !!!**
+**Expressions in the prompt schedule must be enclosed using back ticks: ``` `` ``` not apostrpophes: ```''``` !!! If you are using prompt weight variables such as ```pw_a```, make sure it's enclosed inside backticks as well.**
 
 An example of syntax is as follows:
 ```
 "0": "1girl, solo, long grey hair, grey eyes, black sweater, (smiling:`(0.5+0.5*sin(t/12))`)",
-"24": "1girl, solo, long grey hair, grey eyes, black sweater, (dancing:`(0.5+0.5*sin(t/12))`)",
-"48": "1girl, solo, long grey hair, grey eyes, black sweater, (dancing:`(0.5+0.5*sin(t/12))`)"
-"72": "1girl, solo, long grey hair, grey eyes, black sweater, (smiling:`(0.5+0.5*sin(t/max_f))`)",
+"24": "1girl, solo, long grey hair, grey eyes, black sweater, (dancing:`pw_a`)",
+"48": "1girl, solo, long grey hair, grey eyes, black sweater, (dancing:`pw_a`)",
+"72": "1girl, solo, long grey hair, grey eyes, black sweater, (smiling:`(0.5+0.5*sin(t/max_f))`)"
 ```
+
+To alleviate having to write the full prompt to every keyed frame, the prompts that stay the same through the whole animation can be prepended or appended to every prompt in the schedule using ```pre_text``` and ```app_text``` respectively. I would suggest using the text box suggested in the [important notes](https://github.com/FizzleDorf/ComfyUI_FizzNodes#important) section. Converting the above example would look like this:
+
+pre_text  
+```
+1girl, solo, long grey hair, grey eyes, black sweater,  
+```
+Scheduled Text
+```
+"0": "(smiling:`(0.5+0.5*sin(t/12))`)",
+"24": "(dancing:`pw_a`)",
+"48": "(dancing:`pw_a`)",
+"72": "(smiling:`(0.5+0.5*sin(t/max_f))`)"```
+```
+
+This will be the same output prompts as the first example provided, makes the prompt schedule easy to read and it's easy to edit.
 
 -----
 
-###ValueSchedule
+### ValueSchedule
 This node interpolates float values as well as calculates expressions given by the user through the text input.
 
 To keyframe a value, you need to format it correctly.
@@ -93,10 +164,9 @@ An example of syntax is as follows:
 -----
 
 ## WaveNodes
-
-![WaveNodes](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/21fd2e2d-af8d-4f8b-8b04-9175e4f00dce)
-
-These nodes are simply wave functions that use the current frame for calculating the output. Less powerful than the schedule nodes but easy to use for beginners or for quick automation. The sawtooth wave (modulus) for example is a good way to set the same seed sequence for grids without using multiple ksamplers.
+Example | Description
+----- | -----
+![WaveNodes](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/21fd2e2d-af8d-4f8b-8b04-9175e4f00dce) | These nodes are simply wave functions that use the current frame for calculating the output. Less powerful than the schedule nodes but easy to use for beginners or for quick automation. The sawtooth wave (modulus) for example is a good way to set the same seed sequence for grids without using multiple ksamplers.
 
 -----
 
@@ -111,16 +181,6 @@ Link | Description
 [Audio framesync](https://www.framesync.xyz/) | Audi sync wave functions. Exports keyframes for the valueSchedule node.
 
 -----
-
-TODO:
-- [ ] fix runoff past last keyframe
-- [x] add prepend/append inputs for prompt schedule
-- [x] prompt weight variables
-- [ ] edit readme (including examples, explain new features)
-- [ ] Node flow method
-- [ ] add more to this list
-
------
 ## Acknowledgments
 
 **A special thanks to:**
@@ -132,5 +192,3 @@ TODO:
 -All the friends I met along the way that motivate me into action!
 
 -and you the user! I hope you have fun using these nodes and exploring latent space.
-
-
