@@ -151,7 +151,7 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_
     print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[current_frame], "\n", "Next Prompt: ", nxt_prompt_series[current_frame], "\n", "Strength : ", weight_series[current_frame], "\n")
 
     #Output methods depending if the prompts are the same or if the current frame is a keyframe.
-    #if it is an in-between frame and the prompts differ, compostable diffusion will be performed.
+    #if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     if str(cur_prompt_series[current_frame]) == str(nxt_prompt_series[current_frame]):
         return ([[clip.encode(str(cur_prompt_series[current_frame])), {}]], )
     if weight_series[current_frame] == 1:
@@ -172,14 +172,14 @@ class PromptSchedule:
         return {"required": {"text": ("STRING", {"multiline": True}), 
                             "clip": ("CLIP", ),
                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
-                            "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0,}),# "forceInput": True}),},
+                            "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0,})},# "forceInput": True}),},
                "optional": {"pre_text": ("STRING", {"multiline": False,}),# "forceInput": True}),
                             "app_text": ("STRING", {"multiline": False,}),# "forceInput": True}),
-                            "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),#"forceInput": True}),
-                            "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),#"forceInput": True}),
-                            "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),#"forceInput": True}),
-                            "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),#"forceInput": True}),
-                            }}}
+                            "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+                            "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+                            "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+                            "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+                            }}
     
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "animate"
@@ -264,7 +264,7 @@ class PromptScheduleGLIGEN:
 
         #cond_to, gligen = c[0][0], c[0][1]['gligen'] # separate the tensor_to
         #cond_from = ([[clip.encode(str(text2)), {}]], ) # encode second prompt
-        # # perform compostable diffusion
+        # # perform composable diffusion
         #cond_gligen = (cond_avr, {'gligen': gligen}) # combine the averaged result and gligen
 
         return (c,)
@@ -337,7 +337,7 @@ class PromptScheduleGLIGEN:
         print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[current_frame], "\n", "Next Prompt: ", nxt_prompt_series[current_frame], "\n", "Strength : ", weight_series[current_frame], "\n")
 
         #Output methods depending if the prompts are the same or if the current frame is a keyframe.
-        #if it is an in-between frame and the prompts differ, compostable diffusion will be performed.
+        #if it is an in-between frame and the prompts differ, composable diffusion will be performed.
         #this altered function returns text instead of conditioning so the gligen functions can operate.
         if str(cur_prompt_series[current_frame]) == str(nxt_prompt_series[current_frame]):
             return ((str(cur_prompt_series[current_frame])), np.nan, np.nan)
