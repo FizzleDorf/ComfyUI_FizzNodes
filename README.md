@@ -36,6 +36,10 @@ git clone https://github.com/FizzleDorf/ComfyUI_FizzNodes.git
 ```
 and install the requirements using:
 ```
+.\python_embed\python.exe -s -m pip install -r requirements.txt
+```
+If you are using a venv, make sure you have it activated before installation and use:
+```
 pip install -r requirements.txt
 ```
 
@@ -49,9 +53,13 @@ TODO:
 - [x] fix runoff past last keyframe
 - [x] add prepend/append inputs for prompt schedule
 - [x] prompt weight variables
-- [x] edit readme (including examples, explain new features)
-- [ ] Node flow method
+- [x] create readme
+- [ ] Node flow method (there is an implementation although a bit annoying to convert inputs. I'll check this once that's sorted)
+- [ ] workflow examples
+- [ ] video examples
 - [ ] Gligen support
+- [ ] growable array of prompt weights
+- [ ] attempt simplified scheduler node (another alternative)
 - [ ] add more to this list
 
 -----
