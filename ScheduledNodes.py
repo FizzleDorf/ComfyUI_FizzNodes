@@ -126,6 +126,8 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_
             current_weight = 1 - next_weight
             
             #add the appropriate prompts and weights to their respective containers.
+            print(weight_series)
+            print(weight_series[f])
             cur_prompt_series[f] = ''
             nxt_prompt_series[f] = ''
             weight_series[f] = 0.0
