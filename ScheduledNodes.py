@@ -137,23 +137,22 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_
 
             weight_series[f] += current_weight
     
-        current_key = current_key
+        current_key = next_key
         next_key = max_frames
         current_weight = 0
         #second loop to catch any nan runoff
         for f in range(current_key, next_key):
-                next_weight = weight_step * (f - current_key)
-                current_weight = 0.0 #1 - next_weight
-                
-                #add the appropriate prompts and weights to their respective containers.
-                cur_prompt_series[f] = ''
-                nxt_prompt_series[f] = ''
-                weight_series[f] = 0.0
+             next_weight = weight_step * (f - current_key)
+             current_weight = 1 - next_weight
+             
+             #add the appropriate prompts and weights to their respective containers.
+             cur_prompt_series[f] = ''
+             nxt_prompt_series[f] = ''
+             weight_series[f] = 0.0
 
-                cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
-                nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
 
-                weight_series[f] += current_weight
+             cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
+             nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
 
     #Evaluate the current and next prompt's expressions
     cur_prompt_series[current_frame] = prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)
