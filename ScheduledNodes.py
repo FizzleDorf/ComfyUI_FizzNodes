@@ -19,7 +19,7 @@ def check_is_number(value):
 #functions used by PromptSchedule nodes
 
 #Addweighted function from Comfyui
-def addWeighted(self, conditioning_to, conditioning_from, conditioning_to_strength):
+def addWeighted(conditioning_to, conditioning_from, conditioning_to_strength):
         out = []
 
         if len(conditioning_from) > 1:
@@ -44,7 +44,8 @@ def addWeighted(self, conditioning_to, conditioning_from, conditioning_to_streng
 
             n = [tw, t_to]
             out.append(n)
-        return (out, )
+            print(out)
+        return out
 
 def parse_weight(match, frame=0, max_frames=0) -> float: #calculate weight steps for in-betweens
         w_raw = match.group("weight")
@@ -126,8 +127,8 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_
             current_weight = 1 - next_weight
             
             #add the appropriate prompts and weights to their respective containers.
-            print(weight_series)
-            print(weight_series[f])
+            #print(weight_series)
+            #print(weight_series[f])
             cur_prompt_series[f] = ''
             nxt_prompt_series[f] = ''
             weight_series[f] = 0.0
@@ -139,17 +140,15 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_
     
         current_key = next_key
         next_key = max_frames
-        current_weight = 0
+        current_weight = 0.0
         #second loop to catch any nan runoff
         for f in range(current_key, next_key):
              next_weight = weight_step * (f - current_key)
-             current_weight = 1 - next_weight
              
              #add the appropriate prompts and weights to their respective containers.
              cur_prompt_series[f] = ''
              nxt_prompt_series[f] = ''
-             weight_series[f] = 0.0
-
+             weight_series[f] = current_weight
 
              cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
              nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
@@ -168,20 +167,24 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_
     if str(cur_prompt_series[current_frame]) == str(nxt_prompt_series[current_frame]):
         tokens = clip.tokenize(str(cur_prompt_series[current_frame]))
         cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
-        return ([[cond, {"pooled_output": pooled}]], )
-        #return ([[clip.encode(str(cur_prompt_series[current_frame])), {}]], )
+        return [[cond, {"pooled_output": pooled}]]  # Wrap the result in a list
+
     if weight_series[current_frame] == 1:
         tokens = clip.tokenize(str(cur_prompt_series[current_frame]))
         cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
-        return ([[cond, {"pooled_output": pooled}]], )
-        #return ([[clip.encode(str(cur_prompt_series[current_frame])), {}]], ) #Will probably never trigger but I'm paranoid
+        return [[cond, {"pooled_output": pooled}]]  # Wrap the result in a list
+
     if weight_series[current_frame] == 0:
         tokens = clip.tokenize(str(nxt_prompt_series[current_frame]))
         cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
-        return ([[cond, {"pooled_output": pooled}]], )
-        #return ([[clip.encode(str(nxt_prompt_series[current_frame])), {}]], )
+        return [[cond, {"pooled_output": pooled}]]  # Wrap the result in a list
+
     else:
-        return addWeighted(list([[clip.encode(str(cur_prompt_series[current_frame])), {}]], ), list([[clip.encode(str(nxt_prompt_series[current_frame])), {}]], ), weight_series[current_frame])
+        tokens = clip.tokenize(str(nxt_prompt_series[current_frame]))
+        cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
+        tokens = clip.tokenize(str(cur_prompt_series[current_frame]))
+        cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+        return addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight_series[current_frame])  # Wrap the result in a list
 
 #This node parses the user's formatted prompt,
 #sequences the current prompt,next prompt, and 
@@ -208,10 +211,10 @@ class PromptSchedule:
 
     CATEGORY = "FizzNodes/ScheduleNodes"
 
-    def animate(self, text, max_frames, current_frame, clip, pw_a = 0, pw_b = 0, pw_c = 0, pw_d = 0, pre_text = '', app_text = ''):
-        inputText = str("{"+text+"}") #format the input so it's valid json
+    def animate(self, text, max_frames, current_frame, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
+        inputText = str("{" + text + "}")
         animation_prompts = json.loads(inputText.strip())
-        return interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_text, app_text, pw_a, pw_b, pw_c, pw_d) #return a conditioning value   
+        return (interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_text, app_text, pw_a, pw_b, pw_c, pw_d), )
     
 
 #This node is the same as above except it takes 
