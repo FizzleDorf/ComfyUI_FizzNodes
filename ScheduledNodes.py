@@ -195,7 +195,7 @@ def SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height,
         while len(tokens["l"]) > len(tokens["g"]):
             tokens["g"] += empty["g"]
     cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
-    return ([[cond, {"pooled_output": pooled, "width": width, "height": height, "crop_w": crop_w, "crop_h": crop_h, "target_width": target_width, "target_height": target_height}]], )
+    return [[cond, {"pooled_output": pooled, "width": width, "height": height, "crop_w": crop_w, "crop_h": crop_h, "target_width": target_width, "target_height": target_height}]]
 
 #This node parses the user's formatted prompt,
 #sequences the current prompt,next prompt, and 
@@ -321,15 +321,15 @@ class PromptScheduleEncodeSDXL:
         #in case there is only one keyed promt, set all prompts to that prompt
         if len(sorted_prompts_G) - 1 == 0:
             for i in range(0, len(cur_prompt_series_G)-1):           
-                current_prompt_G = sorted_prompts_G[0][1]           
+                current_prompt_G = sorted_prompts_G[0][1] 
                 cur_prompt_series_G[i] = str(pre_text_G) + " " + str(current_prompt_G) + " " + str(app_text_G)
-                nxt_prompt_series_G[i] = str(pre_text_G) + " " + str(next_prompt_G) + " " + str(app_text_G)
+                nxt_prompt_series_G[i] = str(pre_text_G) + " " + str(current_prompt_G) + " " + str(app_text_G)
 
         if len(sorted_prompts_L) - 1 == 0:
             for i in range(0, len(cur_prompt_series_L)-1):           
                 current_prompt_L = sorted_prompts_L[0][1]           
                 cur_prompt_series_L[i] = str(pre_text_L) + " " + str(current_prompt_L) + " " + str(app_text_L)
-                nxt_prompt_series_L[i] = str(pre_text_G) + " " + str(next_prompt_L) + " " + str(app_text_L)
+                nxt_prompt_series_L[i] = str(pre_text_L) + " " + str(current_prompt_L) + " " + str(app_text_L)
 
         
                 
@@ -384,8 +384,8 @@ class PromptScheduleEncodeSDXL:
                  nxt_prompt_series_G[f] = ''
                  weight_series[f] = current_weight
 
-                 cur_prompt_series_G[f] += (str(pre_text_L) + " " + str(current_prompt_G) + " " + str(app_text_G))
-                 nxt_prompt_series_G[f] += (str(pre_text_L) + " " + str(next_prompt_G) + " " + str(app_text_G))
+                 cur_prompt_series_G[f] += (str(pre_text_G) + " " + str(current_prompt_G) + " " + str(app_text_G))
+                 nxt_prompt_series_G[f] += (str(pre_text_G) + " " + str(next_prompt_G) + " " + str(app_text_G))
 
 
         #Reset outside of loop for nan check
@@ -443,6 +443,8 @@ class PromptScheduleEncodeSDXL:
                  nxt_prompt_series_L[f] += (str(pre_text_L) + " " + str(next_prompt_L) + " " + str(app_text_L))
 
         #Evaluate the current and next prompt's expressions
+        cur_prompt_series_G[current_frame] = prepare_prompt(cur_prompt_series_G[current_frame], max_frames, current_frame, pw_a, pw_b, pw_c, pw_d)
+        nxt_prompt_series_G[current_frame] = prepare_prompt(nxt_prompt_series_G[current_frame], max_frames, current_frame, pw_a, pw_b, pw_c, pw_d) 
         cur_prompt_series_L[current_frame] = prepare_prompt(cur_prompt_series_L[current_frame], max_frames, current_frame, pw_a, pw_b, pw_c, pw_d)
         nxt_prompt_series_L[current_frame] = prepare_prompt(nxt_prompt_series_L[current_frame], max_frames, current_frame, pw_a, pw_b, pw_c, pw_d)       
 
@@ -455,7 +457,7 @@ class PromptScheduleEncodeSDXL:
          
         current_cond = SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, cur_prompt_series_G[current_frame], cur_prompt_series_L[current_frame])
 
-        if str(cur_prompt_series_G[current_frame]) == str(nxt_prompt_series_G[current_frame]) & str(cur_prompt_series_L[current_frame]) == str(nxt_prompt_series_L[current_frame]):           
+        if str(cur_prompt_series_G[current_frame]) == str(nxt_prompt_series_G[current_frame]) and str(cur_prompt_series_L[current_frame]) == str(nxt_prompt_series_L[current_frame]):           
             return current_cond
         
         if weight_series[current_frame] == 1:
