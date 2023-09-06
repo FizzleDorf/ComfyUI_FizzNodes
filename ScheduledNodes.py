@@ -8,10 +8,36 @@ import pandas as pd
 import re
 import simplejson as json
 
-from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning
+from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, PoolAnimConditioningGligen
 
 #Max resolution value for Gligen area calculation.
 MAX_RESOLUTION=8192
+
+defaultPrompt=""""0" :"",
+"12" :"",
+"24" :"",
+"36" :"",
+"48" :"",
+"60" :"",
+"72" :"",
+"84" :"",
+"96" :"",
+"108" :"",
+"120" :""
+"""
+
+defaultValue="""0:(0),
+12:(0),
+24:(0),
+36:(0),
+48:(0),
+60:(0),
+72:(0),
+84:(0),
+96:(0),
+108:(0),
+120:(0)
+"""
 
 #This node parses the user's formatted prompt,
 #sequences the current prompt,next prompt, and 
@@ -21,17 +47,17 @@ MAX_RESOLUTION=8192
 class PromptSchedule:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {"text": ("STRING", {"multiline": True}), 
-                            "clip": ("CLIP", ),
-                            "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
-                            "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0,})},# "forceInput": True}),},
+        return {"required": {"text": ("STRING", {"multiline": True, "default":defaultPrompt}), 
+            "clip": ("CLIP", ),
+            "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
+            "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0,})},# "forceInput": True}),},
                "optional": {"pre_text": ("STRING", {"multiline": False,}),# "forceInput": True}),
-                            "app_text": ("STRING", {"multiline": False,}),# "forceInput": True}),
-                            "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
-                            "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
-                            "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
-                            "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
-                            }}
+            "app_text": ("STRING", {"multiline": False,}),# "forceInput": True}),
+            "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+            "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+            "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+            "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+            }}
     
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "animate"
@@ -46,7 +72,6 @@ class PromptSchedule:
         return (c, )
     
 
-
 class PromptScheduleSDXLRefiner:
     @classmethod
     def INPUT_TYPES(s):
@@ -54,7 +79,7 @@ class PromptScheduleSDXLRefiner:
             "ascore": ("FLOAT", {"default": 6.0, "min": 0.0, "max": 1000.0, "step": 0.01}),
             "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
             "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
-            "text": ("STRING", {"multiline": True}), "clip": ("CLIP", ),
+            "text": ("STRING", {"multiline": True, "default":defaultPrompt}), "clip": ("CLIP", ),
             }}
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "encode"
@@ -110,7 +135,7 @@ class PromptScheduleGLIGEN:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "text": ("STRING", {"multiline": True}),
+                "text": ("STRING", {"multiline": True, "default":defaultPrompt}),
                 "clip": ("CLIP", ),
                 "conditioning_to": ("CONDITIONING",),
                 "gligen_textbox_model": ("GLIGEN", ),
@@ -139,12 +164,13 @@ class PromptScheduleGLIGEN:
         inputText = str("{" + text + "}")  # format the input so it's valid json
         animation_prompts = json.loads(inputText.strip())
         cur_prompt, nxt_prompt, weight = interpolate_prompts(animation_prompts, max_frames,current_frame, pre_text, app_text, pw_a, pw_b, pw_c, pw_d, )
-        return (self.append(conditioning_to, clip, gligen_textbox_model,cur_prompt, nxt_prompt, weight, width, height, x, y, ),)
+        return self.append(conditioning_to, clip, gligen_textbox_model,cur_prompt, nxt_prompt, weight, width, height, x, y)
 
     def append(self, conditioning_to, clip, gligen_textbox_model,cur_prompt, nxt_prompt, weight, width, height, x, y):
         c = []
 
-        cond_pooled = PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip)
+        cond_pooled = PoolAnimConditioningGligen(cur_prompt, nxt_prompt, weight, clip)
+        print('pooled: ',cond_pooled)
         for t in conditioning_to:
             n = [t[0], t[1].copy()]
             position_params = [(cond_pooled, height // 8, width // 8, y // 8, x // 8)]
@@ -154,7 +180,8 @@ class PromptScheduleGLIGEN:
 
             n[1]['gligen'] = ("position", gligen_textbox_model, prev + position_params)
             c.append(n)
-        return c
+            print('output: ', c)
+        return (c,)
 
 
 # This node schedules the prompt using separate nodes as the keyframes.
@@ -219,7 +246,7 @@ class PromptScheduleNodeFlowEnd:
 class ValueSchedule:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {"text": ("STRING", {"multiline": True}),
+        return {"required": {"text": ("STRING", {"multiline": True, "default":defaultValue}),
                              "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
                              "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0,}),# "forceInput": True}),
                              }}
