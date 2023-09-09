@@ -54,7 +54,7 @@ def is_installed(package, package_overwrite=None):
             print(f"Couldn't install\nCommand: {command}\nError code: {result.returncode}")
 
 from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWave, SawtoothWave, TriangleWave, AbsCosWave, AbsSinWave
-from .ScheduledNodes import ValueSchedule, PromptSchedule, PromptScheduleNodeFlow, PromptScheduleNodeFlowEnd, PromptScheduleEncodeSDXL #, PromptScheduleGLIGEN
+from .ScheduledNodes import ValueSchedule, PromptSchedule, PromptScheduleNodeFlow, PromptScheduleNodeFlowEnd, PromptScheduleEncodeSDXL
 
 NODE_CLASS_MAPPINGS = {
     "Lerp": Lerp,
@@ -71,8 +71,7 @@ NODE_CLASS_MAPPINGS = {
     "ValueSchedule": ValueSchedule,
     "PromptScheduleNodeFlow": PromptScheduleNodeFlow,
     "PromptScheduleNodeFlowEnd": PromptScheduleNodeFlowEnd,
-    "PromptScheduleEncodeSDXL":PromptScheduleEncodeSDXL,
-    #"PromptScheduleGLIGEN": PromptScheduleGLIGEN,
+    "PromptScheduleEncodeSDXL":PromptScheduleEncodeSDXL
 }
 
 print('\033[34mFizzleDorf Custom Nodes: \033[92mLoaded\033[0m')

@@ -126,64 +126,6 @@ class PromptScheduleEncodeSDXL:
         animation_promptsL = json.loads(inputTextL.strip())
         return (interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames, current_frame, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, ),)
 
-#This node is the same as above except it takes 
-#a conditioning value and a GLIGEN model to work 
-#with GLIGEN nodes. Gligen code adapted from Comfyui. 
-
-class PromptScheduleGLIGEN:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "text": ("STRING", {"multiline": True, "default":defaultPrompt}),
-                "clip": ("CLIP", ),
-                "conditioning_to": ("CONDITIONING",),
-                "gligen_textbox_model": ("GLIGEN", ),
-                "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
-                "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0}),
-                "width": ("INT", {"default": 64, "min": 8, "max": MAX_RESOLUTION, "step": 8}),
-                "height": ("INT", {"default": 64, "min": 8, "max": MAX_RESOLUTION, "step": 8}),
-                "x": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
-                "y": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
-            },
-            "optional": {
-                "pre_text": ("STRING", {"multiline": False}),
-                "app_text": ("STRING", {"multiline": False}),
-                "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1}),
-                "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1}),
-                "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1}),
-                "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1}),
-            }
-        }
-
-    RETURN_TYPES = ("CONDITIONING",)
-    FUNCTION = "animate"
-    CATEGORY = "FizzNodes/ScheduleNodes"
-
-    def animate(self, text, max_frames, current_frame, clip, conditioning_to, gligen_textbox_model, width, height, x, y, pre_text, app_text, pw_a, pw_b, pw_c, pw_d):
-        inputText = str("{" + text + "}")  # format the input so it's valid json
-        animation_prompts = json.loads(inputText.strip())
-        cur_prompt, nxt_prompt, weight = interpolate_prompts(animation_prompts, max_frames,current_frame, pre_text, app_text, pw_a, pw_b, pw_c, pw_d, )
-        return self.append(conditioning_to, clip, gligen_textbox_model,cur_prompt, nxt_prompt, weight, width, height, x, y)
-
-    def append(self, conditioning_to, clip, gligen_textbox_model,cur_prompt, nxt_prompt, weight, width, height, x, y):
-        c = []
-
-        cond_pooled = PoolAnimConditioningGligen(cur_prompt, nxt_prompt, weight, clip)
-        print('pooled: ',cond_pooled)
-        for t in conditioning_to:
-            n = [t[0], t[1].copy()]
-            position_params = [(cond_pooled, height // 8, width // 8, y // 8, x // 8)]
-            prev = []
-            if "gligen" in n[1]:
-                prev = n[1]['gligen'][2]
-
-            n[1]['gligen'] = ("position", gligen_textbox_model, prev + position_params)
-            c.append(n)
-            print('output: ', c)
-        return (c,)
-
-
 # This node schedules the prompt using separate nodes as the keyframes.
 # The values in the prompt are evaluated in NodeFlowEnd.
 class PromptScheduleNodeFlow:

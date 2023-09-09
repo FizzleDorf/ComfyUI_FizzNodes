@@ -161,8 +161,6 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, 
     #Output methods depending if the prompts are the same or if the current frame is a keyframe.
     #if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     return (cur_prompt_series[current_frame], nxt_prompt_series[current_frame], weight_series[current_frame])
-    
-    
 
 def PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip):  
     if str(cur_prompt) == str(nxt_prompt):
