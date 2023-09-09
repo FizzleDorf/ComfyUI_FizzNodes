@@ -8,7 +8,7 @@ import pandas as pd
 import re
 import simplejson as json
 
-from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, PoolAnimConditioningGligen
+from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning
 
 #Max resolution value for Gligen area calculation.
 MAX_RESOLUTION=8192
