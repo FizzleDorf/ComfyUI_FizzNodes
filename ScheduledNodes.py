@@ -8,7 +8,7 @@ import pandas as pd
 import re
 import simplejson as json
 
-from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, interpolate_string
+from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, interpolate_string, interpolate_prompt_series, BatchPoolAnimConditioning
 
 #Max resolution value for Gligen area calculation.
 MAX_RESOLUTION=8192
@@ -59,7 +59,7 @@ class PromptSchedule:
             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
             }}
     
-    RETURN_TYPES = ("CONDITIONING",)
+    RETURN_TYPES = ("CONDITIONING", "CONDITIONING")
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes/ScheduleNodes"
@@ -68,9 +68,42 @@ class PromptSchedule:
         inputText = str("{" + text + "}")
         animation_prompts = json.loads(inputText.strip())
         cur_prompt, nxt_prompt, weight = interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, app_text, pw_a, pw_b, pw_c, pw_d)
-        c = PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip,)
-        return (c, )
+        c, batch = PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip,)
+        return (c,)
 
+
+class BatchPromptSchedule:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"text": ("STRING", {"multiline": True, "default": defaultPrompt}),
+                             "clip": ("CLIP",),
+                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
+                             "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0, })},
+                # "forceInput": True}),},
+                "optional": {"pre_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
+                             "app_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
+                             "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             }}
+
+    RETURN_TYPES = ("CONDITIONING",)
+    FUNCTION = "animate"
+
+    CATEGORY = "FizzNodes/ScheduleNodes"
+
+    def animate(self, text, max_frames, current_frame, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
+        inputText = str("{" + text + "}")
+        animation_prompts = json.loads(inputText.strip())
+        cur_prompt, nxt_prompt, weight = interpolate_prompt_series(animation_prompts, max_frames, current_frame, pre_text,
+        app_text, pw_a, pw_b, pw_c, pw_d)
+        c = BatchPoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip, )
+        return (c,)
 
 class StringSchedule:
     @classmethod
