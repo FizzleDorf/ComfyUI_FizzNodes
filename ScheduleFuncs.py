@@ -214,7 +214,7 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, 
         next_key = max_frames
         current_weight = 0.0
         #second loop to catch any nan runoff
-        for f in range(current_key, next_key):
+        for f in range(max(current_key, 0), min(next_key, len(cur_prompt_series))):
              next_weight = weight_step * (f - current_key)
 
              #add the appropriate prompts and weights to their respective containers.
@@ -311,7 +311,7 @@ def interpolate_prompt_series(animation_prompts, max_frames, current_frame, pre_
         # Calculate how much to shift the weight from current to next prompt at each frame.
         weight_step = 1 / (next_key - current_key)
 
-        for f in range(current_key, next_key):
+        for f in range(max(current_key, 0), min(next_key, len(cur_prompt_series))):
             next_weight = weight_step * (f - current_key)
             current_weight = 1 - next_weight
 
@@ -366,7 +366,7 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_promt_series, weight_series
             cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
             tokens = clip.tokenize(str(nxt_promt_series[i]))
             cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
-            c += addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight_series[i])
+            c.append(addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight_series[i]))
     return c
 
 def SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l):
