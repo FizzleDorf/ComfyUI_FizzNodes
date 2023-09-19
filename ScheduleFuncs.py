@@ -362,11 +362,12 @@ def interpolate_prompt_series(animation_prompts, max_frames, current_frame, pre_
 def BatchPoolAnimConditioning(cur_prompt_series, nxt_promt_series, weight_series, clip):
     c = []
     for i in range(len(cur_prompt_series)):
-            tokens = clip.tokenize(str(cur_prompt_series[i]))
-            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
-            tokens = clip.tokenize(str(nxt_promt_series[i]))
-            cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
-            c.append(addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight_series[i]))
+        tokens = clip.tokenize(str(cur_prompt_series[i]))
+        cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+        tokens = clip.tokenize(str(nxt_promt_series[i]))
+        cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
+        c.append(addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight_series[i]))
+        print(c)
     return c
 
 def SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l):

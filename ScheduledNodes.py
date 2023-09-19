@@ -1,6 +1,6 @@
 #These nodes were made using code from the Deforum extension for A1111 webui
 #You can find the project here: https://github.com/deforum-art/sd-webui-deforum
-
+import comfy
 import numexpr
 import torch
 import numpy as np
@@ -41,7 +41,7 @@ defaultValue="""0:(0),
 
 #This node parses the user's formatted prompt,
 #sequences the current prompt,next prompt, and 
-#conditioning strength, evalates expressions in 
+#conditioning strength, evaluates expressions in
 #the prompts, and then returns either current, 
 #next or averaged conditioning.
 class PromptSchedule:
