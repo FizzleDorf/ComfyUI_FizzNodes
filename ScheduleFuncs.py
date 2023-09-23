@@ -359,15 +359,33 @@ def interpolate_prompt_series(animation_prompts, max_frames, current_frame, pre_
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     return (cur_prompt_series, nxt_prompt_series, weight_series)
 
-def BatchPoolAnimConditioning(cur_prompt_series, nxt_promt_series, weight_series, clip):
-    c = []
+
+def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
+    pooled_out = []
+    cond_out = []
+
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
-        tokens = clip.tokenize(str(nxt_promt_series[i]))
+
+        tokens = clip.tokenize(str(nxt_prompt_series[i]))
         cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
-        c.append(addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight_series[i]))
-    return c
+
+        interpolated_conditioning = addWeighted([[cond_to, {"pooled_output": pooled_to}]],
+                                                [[cond_from, {"pooled_output": pooled_from}]],
+                                                weight_series[i])
+
+        interpolated_cond = interpolated_conditioning[0][0]
+        interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output", pooled_from)
+
+        pooled_out.append(interpolated_pooled)
+        cond_out.append(interpolated_cond)
+
+    final_pooled_output = torch.cat(pooled_out, dim=0)
+    final_conditioning = torch.cat(cond_out, dim=0)
+
+    return ([[final_conditioning, {"pooled_output": final_pooled_output}]],)
+
 
 def SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l):
     tokens = clip.tokenize(text_g)
