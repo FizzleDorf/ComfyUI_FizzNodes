@@ -68,7 +68,7 @@ class PromptSchedule:
         inputText = str("{" + text + "}")
         animation_prompts = json.loads(inputText.strip())
         cur_prompt, nxt_prompt, weight = interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, app_text, pw_a, pw_b, pw_c, pw_d)
-        c, batch = PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip,)
+        c = PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip,)
         return (c,)
 
 
