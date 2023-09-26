@@ -143,7 +143,7 @@ def interpolate_string(animation_prompts, max_frames, current_frame, pre_text, a
 
     # Output methods depending if the prompts are the same or if the current frame is a keyframe.
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
-    return (cur_prompt_series[current_frame])
+    return (cur_prompt_series[current_frame], cur_prompt_series)
 
 def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, app_text, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4): #parse the conditioning strength and determine in-betweens.
     #Get prompts sorted by keyframe
@@ -259,7 +259,7 @@ def PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip):
         return addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight)
 
 
-def interpolate_prompt_series(animation_prompts, max_frames, current_frame, pre_text, app_text, prompt_weight_1,
+def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, prompt_weight_1,
                         prompt_weight_2, prompt_weight_3,
                         prompt_weight_4):  # parse the conditioning strength and determine in-betweens.
     # Get prompts sorted by keyframe
@@ -343,12 +343,13 @@ def interpolate_prompt_series(animation_prompts, max_frames, current_frame, pre_
             nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
 
     # Evaluate the current and next prompt's expressions
-    cur_prompt_series[current_frame] = prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame,
-                                                      prompt_weight_1, prompt_weight_2, prompt_weight_3,
-                                                      prompt_weight_4)
-    nxt_prompt_series[current_frame] = prepare_prompt(nxt_prompt_series[current_frame], max_frames, current_frame,
-                                                      prompt_weight_1, prompt_weight_2, prompt_weight_3,
-                                                      prompt_weight_4)
+    for i in range(len(cur_prompt_series)):
+        cur_prompt_series[i] = prepare_prompt(cur_prompt_series[i], max_frames, i,
+                                                          prompt_weight_1, prompt_weight_2, prompt_weight_3,
+                                                          prompt_weight_4)
+        nxt_prompt_series[i] = prepare_prompt(nxt_prompt_series[i], max_frames, i,
+                                                          prompt_weight_1, prompt_weight_2, prompt_weight_3,
+                                                          prompt_weight_4)
 
     # Show the to/from prompts with evaluated expressions for transparency.
     for i in range(len(cur_prompt_series)):
@@ -361,6 +362,7 @@ def interpolate_prompt_series(animation_prompts, max_frames, current_frame, pre_
 
 
 def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
+
     pooled_out = []
     cond_out = []
 
@@ -384,7 +386,7 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     final_pooled_output = torch.cat(pooled_out, dim=0)
     final_conditioning = torch.cat(cond_out, dim=0)
 
-    return ([[final_conditioning, {"pooled_output": final_pooled_output}]],)
+    return [[final_conditioning, {"pooled_output": final_pooled_output}]]
 
 
 def SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l):
