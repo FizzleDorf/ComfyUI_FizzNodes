@@ -143,7 +143,7 @@ def interpolate_string(animation_prompts, max_frames, current_frame, pre_text, a
 
     # Output methods depending if the prompts are the same or if the current frame is a keyframe.
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
-    return (cur_prompt_series[current_frame], cur_prompt_series)
+    return (cur_prompt_series[current_frame])
 
 def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, app_text, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4): #parse the conditioning strength and determine in-betweens.
     #Get prompts sorted by keyframe
