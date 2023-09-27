@@ -356,10 +356,22 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
             cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
             nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
 
+    if isinstance(prompt_weight_1, int):
+        prompt_weight_1 = tuple([prompt_weight_1] * max_frames)
+
+    if isinstance(prompt_weight_2, int):
+        prompt_weight_2 = tuple([prompt_weight_2] * max_frames)
+
+    if isinstance(prompt_weight_3, int):
+        prompt_weight_3 = tuple([prompt_weight_3] * max_frames)
+
+    if isinstance(prompt_weight_4, int):
+        prompt_weight_4 = tuple([prompt_weight_4] * max_frames)
+
     # Evaluate the current and next prompt's expressions
     for i in range(len(cur_prompt_series)):
-        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i])#, prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
-        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i])#, prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
+        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i], prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
+        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i], prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
 
     # Show the to/from prompts with evaluated expressions for transparency.
     for i in range(len(cur_prompt_series)):
