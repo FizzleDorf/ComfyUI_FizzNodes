@@ -72,6 +72,20 @@ def prepare_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1 = 0, pr
         return prompt_parsed.strip()
 
 
+def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1 = 0, prompt_weight_2 = 0, prompt_weight_3 = 0,
+                   prompt_weight_4 = 0):  # calculate expressions from the text input and return a string
+    max_f = max_frames - 1
+    pattern = r'`.*?`'  # set so the expression will be read between two backticks (``)
+    regex = re.compile(pattern)
+    prompt_parsed = str(prompt_series)
+
+    for match in regex.finditer(prompt_parsed):
+        matched_string = match.group(0)
+        parsed_string = matched_string.replace('t', f'{frame_idx}').replace("pw_a", f"prompt_weight_1").replace("pw_b",f"prompt_weight_2").replace("pw_c", f"prompt_weight_3").replace("pw_d", f"prompt_weight_4").replace("max_f", f"{max_f}").replace('`', '')  # replace t, max_f and `` respectively
+        parsed_value = numexpr.evaluate(parsed_string)
+        prompt_parsed = prompt_parsed.replace(matched_string, str(parsed_value))
+    return prompt_parsed.strip()
+
 def interpolate_string(animation_prompts, max_frames, current_frame, pre_text, app_text, prompt_weight_1,
                         prompt_weight_2, prompt_weight_3,
                         prompt_weight_4):  # parse the conditioning strength and determine in-betweens.
@@ -259,9 +273,9 @@ def PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip):
         return addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight)
 
 
-def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, prompt_weight_1,
-                        prompt_weight_2, prompt_weight_3,
-                        prompt_weight_4):  # parse the conditioning strength and determine in-betweens.
+def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, prompt_weight_1 = [],
+                        prompt_weight_2 = [], prompt_weight_3 = [],
+                        prompt_weight_4 = []):  # parse the conditioning strength and determine in-betweens.
     # Get prompts sorted by keyframe
     max_f = max_frames  # needed for numexpr even though it doesn't look like it's in use.
     parsed_animation_prompts = {}
@@ -344,12 +358,8 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
 
     # Evaluate the current and next prompt's expressions
     for i in range(len(cur_prompt_series)):
-        cur_prompt_series[i] = prepare_prompt(cur_prompt_series[i], max_frames, i,
-                                                          prompt_weight_1, prompt_weight_2, prompt_weight_3,
-                                                          prompt_weight_4)
-        nxt_prompt_series[i] = prepare_prompt(nxt_prompt_series[i], max_frames, i,
-                                                          prompt_weight_1, prompt_weight_2, prompt_weight_3,
-                                                          prompt_weight_4)
+        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i])#, prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
+        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i])#, prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
 
     # Show the to/from prompts with evaluated expressions for transparency.
     for i in range(len(cur_prompt_series)):
