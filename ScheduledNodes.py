@@ -6,10 +6,11 @@ import torch
 import numpy as np
 import pandas as pd
 import re
+import json
 
 
-from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, interpolate_string, interpolate_prompt_series, BatchPoolAnimConditioning
-
+from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, interpolate_string
+from .BatchFuncs import interpolate_prompt_series, BatchPoolAnimConditioning
 #Max resolution value for Gligen area calculation.
 MAX_RESOLUTION=8192
 
