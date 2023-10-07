@@ -1,3 +1,2 @@
 pandas
 numexpr
-simplejson
