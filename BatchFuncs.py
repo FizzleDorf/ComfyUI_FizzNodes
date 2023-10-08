@@ -164,6 +164,26 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
 
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
 
+def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series, clip):
+    pooled_out = []
+    cond_out = []
+
+    for i in range(len(cur_prompt_series)):
+        interpolated_conditioning = addWeighted(cur_prompt_series[i],
+                                                nxt_prompt_series[i],
+                                                weight_series[i])
+
+        interpolated_cond = interpolated_conditioning[0][0]
+        interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output")
+
+        pooled_out.append(interpolated_pooled)
+        cond_out.append(interpolated_cond)
+
+    final_pooled_output = torch.cat(pooled_out, dim=0)
+    final_conditioning = torch.cat(cond_out, dim=0)
+
+    return [[final_conditioning, {"pooled_output": final_pooled_output}]]
+
 
 def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip, app_text_G,
                              app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w,
@@ -342,7 +362,7 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
                                 cur_prompt_series_G[i], cur_prompt_series_L[i]))
         next_conds.append(SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height,
                                 nxt_prompt_series_G[i], nxt_prompt_series_L[i]))
-    return BatchPoolAnimConditioning(current_conds, next_conds, weight_series, clip)
+    return BatchPoolAnimConditioningSDXL(current_conds, next_conds, weight_series, clip)
 
 
 

@@ -212,7 +212,7 @@ class BatchPromptScheduleEncodeSDXL:
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/ScheduleNodes"
+    CATEGORY = "FizzNodes/BatchScheduleNodes"
 
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, pw_a, pw_b, pw_c, pw_d):
         inputTextG = str("{" + text_g + "}")
