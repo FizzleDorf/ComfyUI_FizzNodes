@@ -10,7 +10,7 @@ import json
 
 
 from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, interpolate_string
-from .BatchFuncs import interpolate_prompt_series, BatchPoolAnimConditioning
+from .BatchFuncs import interpolate_prompt_series, BatchPoolAnimConditioning, BatchInterpolatePromptsSDXL
 #Max resolution value for Gligen area calculation.
 MAX_RESOLUTION=8192
 
@@ -104,6 +104,38 @@ class BatchPromptSchedule:
         c = BatchPoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip, )
         return (c,)
 
+class BatchSDXLPromptSchedule:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"text": ("STRING", {"multiline": True, "default": defaultPrompt}),
+                             "clip": ("CLIP",),
+                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),},
+                # "forceInput": True}),},
+                "optional": {"pre_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
+                             "app_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
+                             "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             }}
+
+    RETURN_TYPES = ("CONDITIONING",)
+    FUNCTION = "animate"
+
+    CATEGORY = "FizzNodes/BatchScheduleNodes"
+
+    def animate(self, text, max_frames, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
+        inputText = str("{" + text + "}")
+        animation_prompts = json.loads(inputText.strip())
+        cur_prompt, nxt_prompt, weight = interpolate_prompt_series(animation_prompts, max_frames, pre_text,
+        app_text, pw_a, pw_b, pw_c, pw_d)
+        c = BatchPoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip, )
+        return (c,)
+
 class StringSchedule:
     @classmethod
     def INPUT_TYPES(s):
@@ -154,6 +186,40 @@ class PromptScheduleSDXLRefiner:
         tokens = clip.tokenize(text)
         cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
         return ([[cond, {"pooled_output": pooled, "aesthetic_score": ascore, "width": width,"height": height}]], )
+
+class BatchPromptScheduleEncodeSDXL:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {
+            "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+            "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+            "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
+            "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
+            "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+            "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+            "text_g": ("STRING", {"multiline": True, "default": "CLIP_G"}), "clip": ("CLIP", ),
+            "text_l": ("STRING", {"multiline": True, "default": "CLIP_L"}), "clip": ("CLIP", ),
+            "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),},
+            "optional": {"pre_text_G": ("STRING", {"multiline": False,}),# "forceInput": True}),
+            "app_text_G": ("STRING", {"multiline": False,}),# "forceInput": True}),
+            "pre_text_L": ("STRING", {"multiline": False,}),# "forceInput": True}),
+            "app_text_L": ("STRING", {"multiline": False,}),# "forceInput": True}),
+            "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+            "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+            "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+            "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
+             }}
+    RETURN_TYPES = ("CONDITIONING",)
+    FUNCTION = "animate"
+
+    CATEGORY = "FizzNodes/ScheduleNodes"
+
+    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, pw_a, pw_b, pw_c, pw_d):
+        inputTextG = str("{" + text_g + "}")
+        inputTextL = str("{" + text_l + "}")
+        animation_promptsG = json.loads(inputTextG.strip())
+        animation_promptsL = json.loads(inputTextL.strip())
+        return (BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, ),)
 
 class PromptScheduleEncodeSDXL:
     @classmethod
