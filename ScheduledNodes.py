@@ -60,7 +60,7 @@ class PromptSchedule:
             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
             }}
     
-    RETURN_TYPES = ("CONDITIONING", "CONDITIONING")
+    RETURN_TYPES = ("CONDITIONING", )
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes/ScheduleNodes"
