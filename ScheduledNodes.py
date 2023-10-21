@@ -66,7 +66,7 @@ class PromptSchedule:
     CATEGORY = "FizzNodes/ScheduleNodes"
 
     def animate(self, text, max_frames, current_frame, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
-        inputText = str("{" + text + "}")
+        inputText = str(("" if text.strip().startswith("{") else "{") + text + ("" if text.strip().endswith("}") else "}"))
         animation_prompts = json.loads(inputText.strip())
         cur_prompt, nxt_prompt, weight = interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, app_text, pw_a, pw_b, pw_c, pw_d)
         c = PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip,)
