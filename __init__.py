@@ -17,7 +17,7 @@ javascript_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "j
 
 if not os.path.exists(extentions_folder):
     print('Making the "web\extensions\FizzleDorf" folder')
-    os.mkdir(extentions_folder)
+    os.makedirs(extentions_folder)
 
 result = filecmp.dircmp(javascript_folder, extentions_folder)
 
