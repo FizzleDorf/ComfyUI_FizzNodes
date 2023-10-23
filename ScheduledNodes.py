@@ -9,8 +9,9 @@ import re
 import json
 
 
-from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, interpolate_string
-from .BatchFuncs import interpolate_prompt_series, BatchPoolAnimConditioning, BatchInterpolatePromptsSDXL
+from .ScheduleFuncs import check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning, interpolate_string, addWeighted, reverseConcatenation
+from .BatchFuncs import interpolate_prompt_series, BatchPoolAnimConditioning, BatchInterpolatePromptsSDXL #, BatchGLIGENConditioning
+from .ValueFuncs import batch_get_inbetweens, batch_parse_key_frames, parse_key_frames, get_inbetweens, sanitize_value
 #Max resolution value for Gligen area calculation.
 MAX_RESOLUTION=8192
 
@@ -52,7 +53,7 @@ class PromptSchedule:
             "clip": ("CLIP", ),
             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
             "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0,})},# "forceInput": True}),},
-               "optional": {"pre_text": ("STRING", {"multiline": False,}),# "forceInput": True}),
+                "optional": {"pre_text": ("STRING", {"multiline": False,}),# "forceInput": True}),
             "app_text": ("STRING", {"multiline": False,}),# "forceInput": True}),
             "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
             "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
@@ -311,6 +312,68 @@ class PromptScheduleNodeFlowEnd:
         animation_prompts = json.loads(inputText.strip())
         return (interpolate_prompts(animation_prompts, max_frames, current_frame, clip, pre_text, app_text, pw_a, pw_b, pw_c, pw_d, ),) #return a conditioning value   
 
+class BatchGLIGENSchedule:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"conditioning_to": ("CONDITIONING",),
+                             "clip": ("CLIP",),
+                             "gligen_textbox_model": ("GLIGEN",),
+                             "text": ("STRING", {"multiline": True, "default":defaultPrompt}),
+                             "width": ("INT", {"default": 64, "min": 8, "max": MAX_RESOLUTION, "step": 8}),
+                             "height": ("INT", {"default": 64, "min": 8, "max": MAX_RESOLUTION, "step": 8}),
+                             "x": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
+                             "y": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
+                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),},
+                # "forceInput": True}),},
+                "optional": {"pre_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
+                             "app_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
+                             "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, }),
+                             # "forceInput": True }),
+                             }}
+
+    RETURN_TYPES = ("CONDITIONING",)
+    FUNCTION = "animate"
+
+    CATEGORY = "FizzNodes/BatchScheduleNodes"
+
+    def animate(self, conditioning_to, clip, gligen_textbox_model, text, width, height, x, y, max_frames, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
+        inputText = str("{" + text + "}")
+        animation_prompts = json.loads(inputText.strip())
+        cur_series, nxt_series, weight_series = interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, pw_a, pw_b, pw_c, pw_d)
+        out = []
+        for i in range(0, max_frames - 1):
+            # Calculate changes in x and y here, based on your logic
+            x_change = 8
+            y_change = 0
+
+            # Update x and y values
+            x += x_change
+            y += y_change
+            print(x)
+            print(y)
+            out.append(self.append(conditioning_to, clip, gligen_textbox_model, pre_text, width, height, x, y))
+
+        return (out,)
+
+    def append(self, conditioning_to, clip, gligen_textbox_model, text, width, height, x, y):
+        c = []
+        cond, cond_pooled = clip.encode_from_tokens(clip.tokenize(text), return_pooled=True)
+        for t in range(0, len(conditioning_to)):
+            n = [conditioning_to[t][0], conditioning_to[t][1].copy()]
+            position_params = [(cond_pooled, height // 8, width // 8, y // 8, x // 8)]
+            prev = []
+            if "gligen" in n[1]:
+                prev = n[1]['gligen'][2]
+
+            n[1]['gligen'] = ("position", gligen_textbox_model, prev + position_params)
+            c.append(n)
+        return c
 
 #This node parses the user's test input into 
 #interpolated floats. Expressions can be input 
@@ -328,59 +391,9 @@ class ValueSchedule:
     CATEGORY = "FizzNodes/ScheduleNodes"
     
     def animate(self, text, max_frames, current_frame,):
-        t = self.get_inbetweens(self.parse_key_frames(text, max_frames), max_frames)
+        t = get_inbetweens(parse_key_frames(text, max_frames), max_frames)
         cFrame = current_frame
         return (t[cFrame],int(t[cFrame]),)
-
-    def sanitize_value(self, value):
-        return value.replace("'","").replace('"',"").replace('(',"").replace(')',"")
-
-    def get_inbetweens(self, key_frames, max_frames, integer=False, interp_method='Linear', is_single_string = False):
-        key_frame_series = pd.Series([np.nan for a in range(max_frames)])
-        max_f = max_frames -1 #needed for numexpr even though it doesn't look like it's in use.
-        value_is_number = False
-        for i in range(0, max_frames):
-            if i in key_frames:
-                value = key_frames[i]
-                value_is_number = check_is_number(self.sanitize_value(value))
-                if value_is_number: # if it's only a number, leave the rest for the default interpolation
-                    key_frame_series[i] = self.sanitize_value(value)
-            if not value_is_number:
-                t = i
-                # workaround for values formatted like 0:("I am test") //used for sampler schedules
-                key_frame_series[i] = numexpr.evaluate(value) if not is_single_string else self.sanitize_value(value)
-            elif is_single_string:# take previous string value and replicate it
-                key_frame_series[i] = key_frame_series[i-1]
-        key_frame_series = key_frame_series.astype(float) if not is_single_string else key_frame_series # as string
-    
-        if interp_method == 'Cubic' and len(key_frames.items()) <= 3:
-            interp_method = 'Quadratic'
-        if interp_method == 'Quadratic' and len(key_frames.items()) <= 2:
-            interp_method = 'Linear'
-    
-        key_frame_series[0] = key_frame_series[key_frame_series.first_valid_index()]
-        key_frame_series[max_frames-1] = key_frame_series[key_frame_series.last_valid_index()]
-        key_frame_series = key_frame_series.interpolate(method=interp_method.lower(), limit_direction='both')
-        
-        if integer:
-            return key_frame_series.astype(int)
-        return key_frame_series
-    
-    def parse_key_frames(self, string, max_frames):
-        # because math functions (i.e. sin(t)) can utilize brackets 
-        # it extracts the value in form of some stuff
-        # which has previously been enclosed with brackets and
-        # with a comma or end of line existing after the closing one
-        frames = dict()
-        for match_object in string.split(","):
-            frameParam = match_object.split(":")
-            max_f = max_frames -1 #needed for numexpr even though it doesn't look like it's in use.
-            frame = int(self.sanitize_value(frameParam[0])) if check_is_number(self.sanitize_value(frameParam[0].strip())) else int(numexpr.evaluate(frameParam[0].strip().replace("'","",1).replace('"',"",1)[::-1].replace("'","",1).replace('"',"",1)[::-1]))
-            frames[frame] = frameParam[1].strip()
-        if frames == {} and len(string) != 0:
-            raise RuntimeError('Key Frame string not correctly formatted')
-        return frames
-
 
 class BatchValueSchedule:
     @classmethod
@@ -395,57 +408,5 @@ class BatchValueSchedule:
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
     def animate(self, text, max_frames, ):
-        t = self.get_inbetweens(self.parse_key_frames(text, max_frames), max_frames)
+        t = batch_get_inbetweens(batch_parse_key_frames(text, max_frames), max_frames)
         return (t, list(map(int,t)),)
-
-    def sanitize_value(self, value):
-        return value.replace("'","").replace('"',"").replace('(',"").replace(')',"")
-    def get_inbetweens(self, key_frames, max_frames, integer=False, interp_method='Linear', is_single_string=False):
-        key_frame_series = pd.Series([np.nan for a in range(max_frames)])
-        max_f = max_frames - 1  # needed for numexpr even though it doesn't look like it's in use.
-        value_is_number = False
-        for i in range(0, max_frames):
-            if i in key_frames:
-                value = key_frames[i]
-                value_is_number = check_is_number(self.sanitize_value(value))
-                if value_is_number:  # if it's only a number, leave the rest for the default interpolation
-                    key_frame_series[i] = self.sanitize_value(value)
-            if not value_is_number:
-                t = i
-                # workaround for values formatted like 0:("I am test") //used for sampler schedules
-                key_frame_series[i] = numexpr.evaluate(value) if not is_single_string else self.sanitize_value(value)
-            elif is_single_string:  # take previous string value and replicate it
-                key_frame_series[i] = key_frame_series[i - 1]
-        key_frame_series = key_frame_series.astype(float) if not is_single_string else key_frame_series  # as string
-
-        if interp_method == 'Cubic' and len(key_frames.items()) <= 3:
-            interp_method = 'Quadratic'
-        if interp_method == 'Quadratic' and len(key_frames.items()) <= 2:
-            interp_method = 'Linear'
-
-        key_frame_series[0] = key_frame_series[key_frame_series.first_valid_index()]
-        key_frame_series[max_frames - 1] = key_frame_series[key_frame_series.last_valid_index()]
-        key_frame_series = key_frame_series.interpolate(method=interp_method.lower(), limit_direction='both')
-
-        if integer:
-            return key_frame_series.astype(int)
-        return key_frame_series
-
-    def parse_key_frames(self, string, max_frames):
-        # because math functions (i.e. sin(t)) can utilize brackets
-        # it extracts the value in form of some stuff
-        # which has previously been enclosed with brackets and
-        # with a comma or end of line existing after the closing one
-        frames = dict()
-        for match_object in string.split(","):
-            frameParam = match_object.split(":")
-            max_f = max_frames - 1  # needed for numexpr even though it doesn't look like it's in use.
-            frame = int(self.sanitize_value(frameParam[0])) if check_is_number(
-                self.sanitize_value(frameParam[0].strip())) else int(numexpr.evaluate(
-                frameParam[0].strip().replace("'", "", 1).replace('"', "", 1)[::-1].replace("'", "", 1).replace('"', "",
-                                                                                                                1)[
-                ::-1]))
-            frames[frame] = frameParam[1].strip()
-        if frames == {} and len(string) != 0:
-            raise RuntimeError('Key Frame string not correctly formatted')
-        return frames

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import re
 
-from .ScheduleFuncs import addWeighted, check_is_number, parse_weight, prepare_prompt, SDXLencode
+from .ScheduleFuncs import addWeighted, check_is_number, parse_weight, prepare_prompt, SDXLencode, reverseConcatenation
 
 def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1=0, prompt_weight_2=0, prompt_weight_3=0,
                          prompt_weight_4=0):  # calculate expressions from the text input and return a string
@@ -123,15 +123,16 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
 
     # Evaluate the current and next prompt's expressions
     for i in range(len(cur_prompt_series)):
+        print(len(cur_prompt_series))
         cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i],
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
         nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i],
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
 
     # Show the to/from prompts with evaluated expressions for transparency.
-    for i in range(len(cur_prompt_series)):
-        print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[i], "\n",
-              "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ", weight_series[i], "\n")
+   #for i in range(len(cur_prompt_series)):
+   #    print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[i], "\n",
+   #          "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ", weight_series[i], "\n")
 
     # Output methods depending if the prompts are the same or if the current frame is a keyframe.
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
@@ -160,9 +161,35 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
         cond_out.append(interpolated_cond)
 
     final_pooled_output = torch.cat(pooled_out, dim=0)
-    final_conditioning = torch.cat(cond_out, dim=0)
+    final_conditioning = torch.cat(cond_out, dim=1)
 
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
+
+def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
+    pooled_out = []
+    cond_out = []
+
+    for i in range(len(cur_prompt_series)):
+        tokens = clip.tokenize(str(cur_prompt_series[i]))
+        cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+
+        tokens = clip.tokenize(str(nxt_prompt_series[i]))
+        cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
+
+        interpolated_conditioning = addWeighted([[cond_to, {"pooled_output": pooled_to}]],
+                                                [[cond_from, {"pooled_output": pooled_from}]],
+                                                weight_series[i])
+
+        interpolated_cond = interpolated_conditioning[0][0]
+        interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output", pooled_from)
+
+        pooled_out.append(interpolated_pooled)
+        cond_out.append(interpolated_cond)
+
+    final_pooled_output = torch.cat(pooled_out, dim=0)
+    final_conditioning = torch.cat(cond_out, dim=0)
+
+    return cond_out, pooled_out
 
 def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []

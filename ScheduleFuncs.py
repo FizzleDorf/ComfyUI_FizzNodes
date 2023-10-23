@@ -38,12 +38,16 @@ def addWeighted(conditioning_to, conditioning_from, conditioning_to_strength):
             out.append(n)
         return out
 
-       # used by both nodes
+def reverseConcatenation(final_conditioning, final_pooled_output, max_frames):
+    # Split the final_conditioning and final_pooled_output tensors into their original components
+    cond_out = torch.split(final_conditioning, max_frames)
+    pooled_out = torch.split(final_pooled_output, max_frames)
+
+    return cond_out, pooled_out
+
 def check_is_number(value):
     float_pattern = r'^(?=.)([+-]?([0-9]*)(\.([0-9]+))?)$'
     return re.match(float_pattern, value)
-
-
 
 def parse_weight(match, frame=0, max_frames=0) -> float: #calculate weight steps for in-betweens
         w_raw = match.group("weight")
