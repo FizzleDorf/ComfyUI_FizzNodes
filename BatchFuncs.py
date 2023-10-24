@@ -207,7 +207,7 @@ def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_s
         cond_out.append(interpolated_cond)
 
     final_pooled_output = torch.cat(pooled_out, dim=0)
-    final_conditioning = torch.cat(cond_out, dim=1)
+    final_conditioning = torch.cat(cond_out, dim=0)
 
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
 
