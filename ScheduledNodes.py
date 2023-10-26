@@ -98,7 +98,10 @@ class BatchPromptSchedule:
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
     def animate(self, text, max_frames, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
+
         inputText = str("{" + text + "}")
+        inputText = re.sub(r',\s*}', '}', inputText)
+
         animation_prompts = json.loads(inputText.strip())
         print(animation_prompts)
         cur_prompt, nxt_prompt, weight = interpolate_prompt_series(animation_prompts, max_frames, pre_text,
