@@ -95,6 +95,7 @@ def batch_parse_key_frames(string, max_frames):
     # it extracts the value in form of some stuff
     # which has previously been enclosed with brackets and
     # with a comma or end of line existing after the closing one
+    string = re.sub(r',\s*$', '', string)
     frames = dict()
     for match_object in string.split(","):
         frameParam = match_object.split(":")
