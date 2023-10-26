@@ -135,6 +135,7 @@ class BatchSDXLPromptSchedule:
 
     def animate(self, text, max_frames, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
+        inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
         cur_prompt, nxt_prompt, weight = interpolate_prompt_series(animation_prompts, max_frames, pre_text,
         app_text, pw_a, pw_b, pw_c, pw_d)
@@ -167,6 +168,7 @@ class StringSchedule:
 
     def animate(self, text, max_frames, current_frame, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
+        inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
         cur_prompt = interpolate_string(animation_prompts, max_frames, current_frame, pre_text,
                                                              app_text, pw_a, pw_b, pw_c, pw_d)
@@ -217,6 +219,7 @@ class BatchStringSchedule:
 
     def animate(self, text, max_frames, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
+        inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
         cur_prompt_series, nxt_prompt_series, weight_series = interpolate_prompt_series(animation_prompts, max_frames, pre_text,
                                                              app_text, pw_a, pw_b, pw_c, pw_d)
@@ -253,6 +256,8 @@ class BatchPromptScheduleEncodeSDXL:
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, pw_a, pw_b, pw_c, pw_d):
         inputTextG = str("{" + text_g + "}")
         inputTextL = str("{" + text_l + "}")
+        inputTextG = re.sub(r',\s*}', '}', inputTextG)
+        inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
         return (BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, ),)
@@ -288,6 +293,8 @@ class PromptScheduleEncodeSDXL:
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, current_frame, pw_a, pw_b, pw_c, pw_d):
         inputTextG = str("{" + text_g + "}")
         inputTextL = str("{" + text_l + "}")
+        inputTextG = re.sub(r',\s*}', '}', inputTextG)
+        inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
         return (interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames, current_frame, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, ),)
@@ -379,6 +386,7 @@ class BatchGLIGENSchedule:
 
     def animate(self, conditioning_to, clip, gligen_textbox_model, text, width, height, x, y, max_frames, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
+        inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
         cur_series, nxt_series, weight_series = interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, pw_a, pw_b, pw_c, pw_d)
         out = []
