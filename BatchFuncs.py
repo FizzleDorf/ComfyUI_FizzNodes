@@ -164,7 +164,7 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
 
         if len(intermediate_pooled) == group_size or i == len(cur_prompt_series) - 1:
             pooled_group = torch.cat(intermediate_pooled, dim=0)
-            cond_group = torch.cat(intermediate_cond, dim=1)
+            cond_group = torch.cat(intermediate_cond, dim=0)
 
             pooled_out.append(pooled_group)
             cond_out.append(cond_group)
