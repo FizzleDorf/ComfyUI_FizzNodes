@@ -54,7 +54,7 @@ def is_installed(package, package_overwrite=None):
             print(f"Couldn't install\nCommand: {command}\nError code: {result.returncode}")
 
 from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWave, SawtoothWave, TriangleWave, AbsCosWave, AbsSinWave
-from .ScheduledNodes import ValueSchedule, PromptSchedule, PromptScheduleNodeFlow, PromptScheduleNodeFlowEnd, PromptScheduleEncodeSDXL, StringSchedule, BatchPromptSchedule, BatchValueSchedule, BatchPromptScheduleEncodeSDXL #, BatchGLIGENSchedule
+from .ScheduledNodes import ValueSchedule, PromptSchedule, PromptScheduleNodeFlow, PromptScheduleNodeFlowEnd, PromptScheduleEncodeSDXL, StringSchedule, BatchPromptSchedule, BatchValueSchedule, BatchPromptScheduleEncodeSDXL, BatchStringSchedule #, BatchGLIGENSchedule
 
 NODE_CLASS_MAPPINGS = {
     "Lerp": Lerp,
@@ -76,6 +76,7 @@ NODE_CLASS_MAPPINGS = {
     "BatchPromptSchedule": BatchPromptSchedule,
     "BatchValueSchedule": BatchValueSchedule,
     "BatchPromptScheduleEncodeSDXL": BatchPromptScheduleEncodeSDXL,
+    "BatchStringSchedule": BatchStringSchedule,
     #"BatchGLIGENSchedule": BatchGLIGENSchedule,
 
 }

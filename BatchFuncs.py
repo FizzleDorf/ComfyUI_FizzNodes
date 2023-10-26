@@ -123,25 +123,27 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
 
     # Evaluate the current and next prompt's expressions
     for i in range(len(cur_prompt_series)):
-        print(len(cur_prompt_series))
         cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i],
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
         nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i],
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
 
     # Show the to/from prompts with evaluated expressions for transparency.
-   #for i in range(len(cur_prompt_series)):
-   #    print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[i], "\n",
-   #          "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ", weight_series[i], "\n")
+    for i in range(len(cur_prompt_series)):
+        print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[i], "\n", "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ", weight_series[i], "\n")
 
     # Output methods depending if the prompts are the same or if the current frame is a keyframe.
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     return (cur_prompt_series, nxt_prompt_series, weight_series)
 
-
 def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []
     cond_out = []
+
+    group_size = 4
+
+    intermediate_pooled = []
+    intermediate_cond = []
 
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
@@ -157,13 +159,24 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output", pooled_from)
 
-        pooled_out.append(interpolated_pooled)
-        cond_out.append(interpolated_cond)
+        intermediate_pooled.append(interpolated_pooled)
+        intermediate_cond.append(interpolated_cond)
+
+        if len(intermediate_pooled) == group_size or i == len(cur_prompt_series) - 1:
+            pooled_group = torch.cat(intermediate_pooled, dim=0)
+            cond_group = torch.cat(intermediate_cond, dim=1)
+
+            pooled_out.append(pooled_group)
+            cond_out.append(cond_group)
+
+            intermediate_pooled = []
+            intermediate_cond = []
 
     final_pooled_output = torch.cat(pooled_out, dim=0)
     final_conditioning = torch.cat(cond_out, dim=1)
 
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
+
 
 def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []
