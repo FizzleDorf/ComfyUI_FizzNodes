@@ -75,17 +75,26 @@ NODE_CLASS_MAPPINGS = {
     "ValueSchedule": ValueSchedule,
     "PromptScheduleNodeFlow": PromptScheduleNodeFlow,
     "PromptScheduleNodeFlowEnd": PromptScheduleNodeFlowEnd,
-    "PromptScheduleSDXL":PromptScheduleEncodeSDXL,
+    "PromptScheduleEncodeSDXL":PromptScheduleEncodeSDXL,
     "StringSchedule":StringSchedule,
     "BatchPromptSchedule": BatchPromptSchedule,
     "BatchValueSchedule": BatchValueSchedule,
-    "BatchPromptScheduleSDXL": BatchPromptScheduleEncodeSDXL,
+    "BatchPromptScheduleEncodeSDXL": BatchPromptScheduleEncodeSDXL,
     "BatchStringSchedule": BatchStringSchedule,
-    "BatchValueSchedule(LatentInput)": BatchValueScheduleLatentInput,
-    "BatchPromptScheduleSDXL(LatentInput)":BatchPromptScheduleEncodeSDXLLatentInput,
-    "BatchPromptSchedule(LatentInput)":BatchPromptScheduleLatentInput,
+    "BatchValueScheduleLatentInput": BatchValueScheduleLatentInput,
+    "BatchPromptScheduleSDXLLatentInput":BatchPromptScheduleEncodeSDXLLatentInput,
+    "BatchPromptScheduleLatentInput":BatchPromptScheduleLatentInput,
     #"BatchGLIGENSchedule": BatchGLIGENSchedule,
 
 }
 
+NODE_DISPLAY_NAME_MAPPINGS = {
+
+    "PromptScheduleEncodeSDXL": "PromptScheduleSDXL",
+    "BatchPromptScheduleEncodeSDXL": "BatchPromptScheduleSDXL",
+    "BatchStringSchedule": "BatchStringSchedule",
+    "BatchValueScheduleLatentInput": "BatchValueSchedule(LatentInput)",
+    "BatchPromptScheduleSDXLLatentInput": "BatchPromptScheduleSDXL(LatentInput)",
+    "BatchPromptScheduleLatentInput": "BatchPromptSchedule(LatentInput)",
+}
 print('\033[34mFizzleDorf Custom Nodes: \033[92mLoaded\033[0m')
