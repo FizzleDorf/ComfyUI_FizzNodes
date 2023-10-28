@@ -134,9 +134,8 @@ class BatchPromptScheduleLatentInput:
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
     def animate(self, text, num_latents, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
-        num_elements = sum([tensor.numel() for tensor in num_latents.values()])
-        max_frames = num_elements
-
+        max_frames = sum(tensor.size(0) for tensor in num_latents.values())
+        print("max_frames", max_frames)
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
 
@@ -294,8 +293,8 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, num_latents, pw_a, pw_b, pw_c, pw_d):
-        num_elements = sum([tensor.numel() for tensor in num_latents.values()])
-        max_frames = num_elements
+        max_frames = max_frames = sum(tensor.size(0) for tensor in num_latents.values())
+        print("max_frames", max_frames)
         inputTextG = str("{" + text_g + "}")
         inputTextL = str("{" + text_l + "}")
         inputTextG = re.sub(r',\s*}', '}', inputTextG)
@@ -509,7 +508,7 @@ class BatchValueScheduleLatentInput:
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
     def animate(self, text, num_latents, ):
-        num_elements = sum([tensor.numel() for tensor in num_latents.values()])
+        num_elements = sum(tensor.size(0) for tensor in num_latents.values())
         max_frames = num_elements
         t = batch_get_inbetweens(batch_parse_key_frames(text, max_frames), max_frames)
         return (t, list(map(int,t)), num_latents, )
