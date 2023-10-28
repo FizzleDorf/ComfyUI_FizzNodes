@@ -293,7 +293,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, num_latents, pw_a, pw_b, pw_c, pw_d):
-        max_frames = max_frames = sum(tensor.size(0) for tensor in num_latents.values())
+        max_frames = sum(tensor.size(0) for tensor in num_latents.values())
         print("max_frames", max_frames)
         inputTextG = str("{" + text_g + "}")
         inputTextL = str("{" + text_l + "}")
