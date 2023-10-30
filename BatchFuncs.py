@@ -28,7 +28,7 @@ def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1=0
 
 def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, prompt_weight_1=[],
                               prompt_weight_2=[], prompt_weight_3=[],
-                              prompt_weight_4=[]):  # parse the conditioning strength and determine in-betweens.
+                              prompt_weight_4=[], Is_print = False):  # parse the conditioning strength and determine in-betweens.
     # Get prompts sorted by keyframe
     max_f = max_frames  # needed for numexpr even though it doesn't look like it's in use.
     parsed_animation_prompts = {}
@@ -128,9 +128,10 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
         nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i],
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
 
-    # Show the to/from prompts with evaluated expressions for transparency.
-    for i in range(len(cur_prompt_series)):
-        print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[i], "\n", "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ", weight_series[i], "\n")
+    if Is_print == True:
+        # Show the to/from prompts with evaluated expressions for transparency.
+        for i in range(len(cur_prompt_series)):
+            print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[i], "\n", "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ", weight_series[i], "\n")
 
     # Output methods depending if the prompts are the same or if the current frame is a keyframe.
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
@@ -227,8 +228,9 @@ def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_s
 
 def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip, app_text_G,
                              app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w,
-                             crop_h, target_width,
-                             target_height):  # parse the conditioning strength and determine in-betweens.
+                             crop_h, target_width, target_height, Is_print = False):
+
+    # parse the conditioning strength and determine in-betweens.
     # Get prompts sorted by keyframe
     max_f = max_frames  # needed for numexpr even though it doesn't look like it's in use.
     parsed_animation_promptsG = {}
@@ -394,6 +396,7 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
                                                              pw_a, pw_b, pw_c, pw_d)
         nxt_prompt_series_L[i] = prepare_batch_prompt(nxt_prompt_series_L[i], max_frames,
                                                              pw_a, pw_b, pw_c, pw_d)
+        #if Is_print == True:
 
     current_conds = []
     next_conds = []

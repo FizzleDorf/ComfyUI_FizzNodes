@@ -78,7 +78,8 @@ class BatchPromptSchedule:
     def INPUT_TYPES(s):
         return {"required": {"text": ("STRING", {"multiline": True, "default": defaultPrompt}),
                              "clip": ("CLIP",),
-                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),},
+                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
+                             "print_output":("BOOLEAN", {"default": False}),},
                 # "forceInput": True}),},
                 "optional": {"pre_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
                              "app_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
@@ -97,15 +98,14 @@ class BatchPromptSchedule:
 
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
-    def animate(self, text, max_frames, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
+    def animate(self, text, max_frames, print_output, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
 
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
 
         animation_prompts = json.loads(inputText.strip())
-        print(animation_prompts)
         cur_prompt, nxt_prompt, weight = interpolate_prompt_series(animation_prompts, max_frames, pre_text,
-        app_text, pw_a, pw_b, pw_c, pw_d)
+        app_text, pw_a, pw_b, pw_c, pw_d, print_output)
         c = BatchPoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip, )
         return (c,)
 
@@ -114,7 +114,8 @@ class BatchPromptScheduleLatentInput:
     def INPUT_TYPES(s):
         return {"required": {"text": ("STRING", {"multiline": True, "default": defaultPrompt}),
                              "clip": ("CLIP",),
-                             "num_latents": ("LATENT", ),},
+                             "num_latents": ("LATENT", ),
+                             "print_output":("BOOLEAN", {"default": False}),},
                 # "forceInput": True}),},
                 "optional": {"pre_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
                              "app_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
@@ -133,7 +134,7 @@ class BatchPromptScheduleLatentInput:
 
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
-    def animate(self, text, num_latents, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
+    def animate(self, text, num_latents, print_output, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
         max_frames = sum(tensor.size(0) for tensor in num_latents.values())
         print("max_frames", max_frames)
         inputText = str("{" + text + "}")
@@ -142,7 +143,7 @@ class BatchPromptScheduleLatentInput:
         animation_prompts = json.loads(inputText.strip())
         print(animation_prompts)
         cur_prompt, nxt_prompt, weight = interpolate_prompt_series(animation_prompts, max_frames, pre_text,
-        app_text, pw_a, pw_b, pw_c, pw_d)
+        app_text, pw_a, pw_b, pw_c, pw_d, print_output)
         c = BatchPoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip, )
         return (c, num_latents, )
 class StringSchedule:
@@ -201,7 +202,7 @@ class BatchStringSchedule:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {"text": ("STRING", {"multiline": True, "default": defaultPrompt}),
-                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0})},
+                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),},
                 # "forceInput": True}),},
                 "optional": {"pre_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
                              "app_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
@@ -241,7 +242,8 @@ class BatchPromptScheduleEncodeSDXL:
             "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
             "text_g": ("STRING", {"multiline": True, "default": "CLIP_G"}), "clip": ("CLIP", ),
             "text_l": ("STRING", {"multiline": True, "default": "CLIP_L"}), "clip": ("CLIP", ),
-            "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),},
+            "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
+            "print_output":("BOOLEAN", {"default": False}),},
             "optional": {"pre_text_G": ("STRING", {"multiline": False,}),# "forceInput": True}),
             "app_text_G": ("STRING", {"multiline": False,}),# "forceInput": True}),
             "pre_text_L": ("STRING", {"multiline": False,}),# "forceInput": True}),
@@ -256,14 +258,14 @@ class BatchPromptScheduleEncodeSDXL:
 
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
-    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, pw_a, pw_b, pw_c, pw_d):
+    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, print_output, pw_a, pw_b, pw_c, pw_d):
         inputTextG = str("{" + text_g + "}")
         inputTextL = str("{" + text_l + "}")
         inputTextG = re.sub(r',\s*}', '}', inputTextG)
         inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
-        return (BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, ),)
+        return (BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output,),)
 
 class BatchPromptScheduleEncodeSDXLLatentInput:
     @classmethod
@@ -277,7 +279,8 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
             "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
             "text_g": ("STRING", {"multiline": True, "default": "CLIP_G"}), "clip": ("CLIP", ),
             "text_l": ("STRING", {"multiline": True, "default": "CLIP_L"}), "clip": ("CLIP", ),
-            "num_latents": ("Latent", ),},
+            "num_latents": ("Latent", ),
+            "print_output":("BOOLEAN", {"default": False}),},
             "optional": {"pre_text_G": ("STRING", {"multiline": False,}),# "forceInput": True}),
             "app_text_G": ("STRING", {"multiline": False,}),# "forceInput": True}),
             "pre_text_L": ("STRING", {"multiline": False,}),# "forceInput": True}),
@@ -292,7 +295,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
 
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
-    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, num_latents, pw_a, pw_b, pw_c, pw_d):
+    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, num_latents, print_output, pw_a, pw_b, pw_c, pw_d):
         max_frames = sum(tensor.size(0) for tensor in num_latents.values())
         print("max_frames", max_frames)
         inputTextG = str("{" + text_g + "}")
@@ -301,7 +304,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
         inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
-        return (BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, ), num_latents, )
+        return (BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output, ), num_latents, )
 
 class PromptScheduleEncodeSDXL:
     @classmethod
@@ -406,7 +409,8 @@ class BatchGLIGENSchedule:
                              "height": ("INT", {"default": 64, "min": 8, "max": MAX_RESOLUTION, "step": 8}),
                              "x": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
                              "y": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
-                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),},
+                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 9999.0, "step": 1.0}),
+                             "print_output":("BOOLEAN", {"default": False})},
                 # "forceInput": True}),},
                 "optional": {"pre_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
                              "app_text": ("STRING", {"multiline": False, }),  # "forceInput": True}),
@@ -425,11 +429,11 @@ class BatchGLIGENSchedule:
 
     CATEGORY = "FizzNodes/BatchScheduleNodes"
 
-    def animate(self, conditioning_to, clip, gligen_textbox_model, text, width, height, x, y, max_frames, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
+    def animate(self, conditioning_to, clip, gligen_textbox_model, text, width, height, x, y, max_frames, print_output, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
-        cur_series, nxt_series, weight_series = interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, pw_a, pw_b, pw_c, pw_d)
+        cur_series, nxt_series, weight_series = interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, pw_a, pw_b, pw_c, pw_d, print_output)
         out = []
         for i in range(0, max_frames - 1):
             # Calculate changes in x and y here, based on your logic
