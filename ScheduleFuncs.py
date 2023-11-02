@@ -49,6 +49,52 @@ def check_is_number(value):
     float_pattern = r'^(?=.)([+-]?([0-9]*)(\.([0-9]+))?)$'
     return re.match(float_pattern, value)
 
+def split_weighted_subprompts(text, frame=0, max_frames=0):
+    """
+    splits the prompt based on deforum webui implementation, moved from generate.py
+    """
+    math_parser = re.compile("(?P<weight>(`[\S\s]*?`))", re.VERBOSE)
+
+    parsed_prompt = re.sub(math_parser, lambda m: str(parse_weight(m, frame)), text)
+
+    negative_prompts = []
+    positive_prompts = []
+
+    prompt_split = parsed_prompt.split("--neg")
+    if len(prompt_split) > 1:
+        positive_prompts, negative_prompts = parsed_prompt.split("--neg")  # TODO: add --neg to vanilla Deforum for compat
+    else:
+        positive_prompts = prompt_split[0]
+        negative_prompts = ""
+
+    return positive_prompts, negative_prompts
+
+def batch_split_weighted_subprompts(text, max_frames=0):
+    """
+    splits the prompt based on deforum webui implementation, moved from generate.py
+    """
+    pos = []
+    neg = []
+    for i in range(0,(max_frames-1)):
+        math_parser = re.compile("(?P<weight>(`[\S\s]*?`))", re.VERBOSE)
+
+        parsed_prompt = re.sub(math_parser, lambda m: str(parse_weight(m, i)), text)
+
+        negative_prompts = []
+        positive_prompts = []
+
+        prompt_split = parsed_prompt.split("--neg")
+        if len(prompt_split) > 1:
+            positive_prompts, negative_prompts = parsed_prompt.split("--neg")
+        else:
+            positive_prompts = prompt_split[0]
+            negative_prompts = ""
+
+        pos.append(positive_prompts)
+        neg.append(negative_prompts)
+
+
+    return pos, neg
 def parse_weight(match, frame=0, max_frames=0) -> float: #calculate weight steps for in-betweens
         w_raw = match.group("weight")
         max_f = max_frames  # this line has to be left intact as it's in use by numexpr even though it looks like it doesn't
