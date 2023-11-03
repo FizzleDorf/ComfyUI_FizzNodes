@@ -49,6 +49,65 @@ def check_is_number(value):
     float_pattern = r'^(?=.)([+-]?([0-9]*)(\.([0-9]+))?)$'
     return re.match(float_pattern, value)
 
+def split_weighted_subprompts(text, frame=0, max_frames=0):
+    """
+    splits the prompt based on deforum webui implementation, moved from generate.py
+    """
+    math_parser = re.compile("(?P<weight>(`[\S\s]*?`))", re.VERBOSE)
+
+    parsed_prompt = re.sub(math_parser, lambda m: str(parse_weight(m, frame)), text)
+
+    negative_prompts = []
+    positive_prompts = []
+
+    prompt_split = parsed_prompt.split("--neg")
+    if len(prompt_split) > 1:
+        positive_prompts, negative_prompts = parsed_prompt.split("--neg")  # TODO: add --neg to vanilla Deforum for compat
+    else:
+        positive_prompts = prompt_split[0]
+        negative_prompts = ""
+
+    return positive_prompts, negative_prompts
+
+def batch_split_weighted_subprompts(text, pre_text, app_text):
+    pos = {}
+    neg = {}
+    pre_text = str(pre_text)
+    app_text = str(app_text)
+
+    if "--neg" in pre_text:
+        pre_pos, pre_neg = pre_text.split("--neg")
+    else:
+        pre_pos, pre_neg = pre_text, ""
+
+    if "--neg" in app_text:
+        app_pos, app_neg = app_text.split("--neg")
+    else:
+        app_pos, app_neg = app_text, ""
+
+    for frame, prompt in text.items():
+        negative_prompts = ""
+        positive_prompts = ""
+
+        # Check if the last character is '0' and remove it
+
+
+        prompt_split = prompt.split("--neg")
+        if len(prompt_split) > 1:
+            positive_prompts, negative_prompts = prompt_split[0], prompt_split[1]
+        else:
+            positive_prompts = prompt_split[0]
+
+        pos[frame] = ""
+        neg[frame] = ""
+        pos[frame] += (str(pre_pos) + " " + positive_prompts + " " + str(app_pos))
+        neg[frame] += (str(pre_neg) + " " + negative_prompts + " " + str(app_neg))
+        if pos[frame].endswith('0'):
+            pos[frame] = pos[frame][:-1]
+        if neg[frame].endswith('0'):
+            neg[frame] = neg[frame][:-1]
+    return pos, neg
+
 def parse_weight(match, frame=0, max_frames=0) -> float: #calculate weight steps for in-betweens
         w_raw = match.group("weight")
         max_f = max_frames  # this line has to be left intact as it's in use by numexpr even though it looks like it doesn't
@@ -131,6 +190,7 @@ def interpolate_string(animation_prompts, max_frames, current_frame, pre_text, a
         current_key = next_key
         next_key = max_frames
         # second loop to catch any nan runoff
+
         for f in range(current_key, next_key):
             # add the appropriate prompts and weights to their respective containers.
             cur_prompt_series[f] = ''
