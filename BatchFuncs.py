@@ -51,10 +51,8 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
     if len(sorted_prompts) - 1 == 0:
         for i in range(0, len(cur_prompt_series) - 1):
             current_prompt = sorted_prompts[0][1]
-            #cur_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
-            #nxt_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
-            cur_prompt_series[i] = str(current_prompt)
-            nxt_prompt_series[i] = str(current_prompt)
+            cur_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
+            nxt_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
 
     # Initialized outside of loop for nan check
     current_key = 0
@@ -91,11 +89,8 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
             nxt_prompt_series[f] = ''
             weight_series[f] = 0.0
 
-            #cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
-            #nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
-
-            cur_prompt_series[f] = str(current_prompt)
-            nxt_prompt_series[f] = str(next_prompt)
+            cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
+            nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
 
             weight_series[f] += current_weight
 
@@ -110,10 +105,9 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
             cur_prompt_series[f] = ''
             nxt_prompt_series[f] = ''
             weight_series[f] = current_weight
-            #cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
-            #nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
-            cur_prompt_series[f] = str(current_prompt)
-            nxt_prompt_series[f] = str(next_prompt)
+
+            cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
+            nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
 
     if isinstance(prompt_weight_1, int):
         prompt_weight_1 = tuple([prompt_weight_1] * max_frames)
