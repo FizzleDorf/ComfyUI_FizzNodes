@@ -26,6 +26,45 @@ def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1=0
         prompt_parsed = prompt_parsed.replace(matched_string, str(parsed_value))
     return prompt_parsed.strip()
 
+def batch_split_weighted_subprompts(text, pre_text, app_text):
+    pos = {}
+    neg = {}
+    pre_text = str(pre_text)
+    app_text = str(app_text)
+
+    if "--neg" in pre_text:
+        pre_pos, pre_neg = pre_text.split("--neg")
+    else:
+        pre_pos, pre_neg = pre_text, ""
+
+    if "--neg" in app_text:
+        app_pos, app_neg = app_text.split("--neg")
+    else:
+        app_pos, app_neg = app_text, ""
+
+    for frame, prompt in text.items():
+        negative_prompts = ""
+        positive_prompts = ""
+
+        # Check if the last character is '0' and remove it
+
+
+        prompt_split = prompt.split("--neg")
+        if len(prompt_split) > 1:
+            positive_prompts, negative_prompts = prompt_split[0], prompt_split[1]
+        else:
+            positive_prompts = prompt_split[0]
+
+        pos[frame] = ""
+        neg[frame] = ""
+        pos[frame] += (str(pre_pos) + " " + positive_prompts + " " + str(app_pos))
+        neg[frame] += (str(pre_neg) + " " + negative_prompts + " " + str(app_neg))
+        if pos[frame].endswith('0'):
+            pos[frame] = pos[frame][:-1]
+        if neg[frame].endswith('0'):
+            neg[frame] = neg[frame][:-1]
+    return pos, neg
+
 def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, prompt_weight_1=[],
                               prompt_weight_2=[], prompt_weight_3=[],
                               prompt_weight_4=[], Is_print = False):  # parse the conditioning strength and determine in-betweens.
@@ -48,11 +87,9 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
     weight_series = [np.nan] * max_frames
 
     # in case there is only one keyed promt, set all prompts to that prompt
-    if len(sorted_prompts) - 1 == 0:
+    if len(sorted_prompts) == 1:
         for i in range(0, len(cur_prompt_series) - 1):
             current_prompt = sorted_prompts[0][1]
-            #cur_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
-            #nxt_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
             cur_prompt_series[i] = str(current_prompt)
             nxt_prompt_series[i] = str(current_prompt)
 
@@ -90,10 +127,6 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
             cur_prompt_series[f] = ''
             nxt_prompt_series[f] = ''
             weight_series[f] = 0.0
-
-            #cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
-            #nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
-
             cur_prompt_series[f] = str(current_prompt)
             nxt_prompt_series[f] = str(next_prompt)
 
@@ -110,8 +143,6 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
             cur_prompt_series[f] = ''
             nxt_prompt_series[f] = ''
             weight_series[f] = current_weight
-            #cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
-            #nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
             cur_prompt_series[f] = str(current_prompt)
             nxt_prompt_series[f] = str(next_prompt)
 
