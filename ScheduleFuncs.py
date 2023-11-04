@@ -219,11 +219,16 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, 
     weight_series = [np.nan] * max_frames
 
     #in case there is only one keyed promt, set all prompts to that prompt
-    if len(sorted_prompts) - 1 == 0:
-        for i in range(0, len(cur_prompt_series)-1):
-            current_prompt = sorted_prompts[0][1]
-            cur_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
-            nxt_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
+    for i in range(0, len(cur_prompt_series)):
+        for key, value in sorted_prompts:
+            key = int(key)
+            if i <= key:
+                current_prompt = value
+                break
+
+        cur_prompt_series[i] = current_prompt
+        nxt_prompt_series[i] = current_prompt
+
     #Initialized outside of loop for nan check
     current_key = 0
     next_key = 0
@@ -241,21 +246,22 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, 
         for f in range(max_frames):
             if f < current_key:
                 # Frame is before the first keyframe, use the first keyframe prompt
-                cur_prompt_series[f] = str(pre_text) + " " + current_prompt + " " + app_text
-                nxt_prompt_series[f] = str(pre_text) + " " + current_prompt + " " + app_text
+                cur_prompt_series[f] = current_prompt
+                nxt_prompt_series[f] = current_prompt
+                current_weight = 1.0  # Set current_weight unconditionally
             elif current_key <= f < next_key:
                 # Frame is between keyframes, interpolate prompts
                 next_weight = weight_step * (f - current_key)
                 current_weight = 1 - next_weight
 
-                cur_prompt_series[f] = str(pre_text) + " " + current_prompt + " " + app_text
-                nxt_prompt_series[f] = str(pre_text) + " " + next_prompt + " " + app_text
+                cur_prompt_series[f] = current_prompt
+                nxt_prompt_series[f] = next_prompt
             else:
                 # Frame is after the last keyframe, use the last keyframe prompt
-                cur_prompt_series[f] = str(pre_text) + " " + next_prompt + " " + app_text
-                nxt_prompt_series[f] = str(pre_text) + " " + next_prompt + " " + app_text
+                cur_prompt_series[f] = next_prompt
+                nxt_prompt_series[f] = next_prompt
 
-                weight_series[f] = current_weight
+            weight_series[f] = current_weight
 
     #Evaluate the current and next prompt's expressions
     cur_prompt_series[current_frame] = prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)
