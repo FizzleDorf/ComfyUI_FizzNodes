@@ -92,7 +92,6 @@ def split_weighted_subprompts(text, frame=0, pre_text='', app_text=''):
 
     return pos, neg
 
-
 def parse_weight(match, frame=0, max_frames=0) -> float: #calculate weight steps for in-betweens
         w_raw = match.group("weight")
         max_f = max_frames  # this line has to be left intact as it's in use by numexpr even though it looks like it doesn't
