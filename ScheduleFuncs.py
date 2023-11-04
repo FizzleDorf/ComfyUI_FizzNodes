@@ -49,6 +49,49 @@ def check_is_number(value):
     float_pattern = r'^(?=.)([+-]?([0-9]*)(\.([0-9]+))?)$'
     return re.match(float_pattern, value)
 
+def split_weighted_subprompts(text, frame=0, pre_text='', app_text=''):
+    pre_text = str(pre_text)
+    app_text = str(app_text)
+
+    if "--neg" in pre_text:
+        pre_pos, pre_neg = pre_text.split("--neg")
+    else:
+        pre_pos, pre_neg = pre_text, ""
+
+    if "--neg" in app_text:
+        app_pos, app_neg = app_text.split("--neg")
+    else:
+        app_pos, app_neg = app_text, ""
+
+    # Check if the text is a string; if not, convert it to a string
+    if not isinstance(text, str):
+        text = str(text)
+
+    math_parser = re.compile("(?P<weight>(`[\S\s]*?`))", re.VERBOSE)
+
+    parsed_prompt = re.sub(math_parser, lambda m: str(parse_weight(m, frame)), text)
+
+    negative_prompts = ""
+    positive_prompts = ""
+
+    # Check if the last character is '0' and remove it
+    prompt_split = parsed_prompt.split("--neg")
+    if len(prompt_split) > 1:
+        positive_prompts, negative_prompts = prompt_split[0], prompt_split[1]
+    else:
+        positive_prompts = prompt_split[0]
+
+    pos = {}
+    neg = {}
+    pos[frame] = (str(pre_pos) + " " + str(positive_prompts) + " " + str(app_pos))
+    neg[frame] = (str(pre_neg) + " " + str(negative_prompts) + " " + str(app_neg))
+    if pos[frame].endswith('0'):
+        pos[frame] = pos[frame][:-1]
+    if neg[frame].endswith('0'):
+        neg[frame] = neg[frame][:-1]
+
+    return pos, neg
+
 def parse_weight(match, frame=0, max_frames=0) -> float: #calculate weight steps for in-betweens
         w_raw = match.group("weight")
         max_f = max_frames  # this line has to be left intact as it's in use by numexpr even though it looks like it doesn't
@@ -131,6 +174,7 @@ def interpolate_string(animation_prompts, max_frames, current_frame, pre_text, a
         current_key = next_key
         next_key = max_frames
         # second loop to catch any nan runoff
+
         for f in range(current_key, next_key):
             # add the appropriate prompts and weights to their respective containers.
             cur_prompt_series[f] = ''
@@ -151,15 +195,21 @@ def interpolate_string(animation_prompts, max_frames, current_frame, pre_text, a
 def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, app_text, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4): #parse the conditioning strength and determine in-betweens.
     #Get prompts sorted by keyframe
     max_f = max_frames #needed for numexpr even though it doesn't look like it's in use.
+
+    proper_json_data = {str(key): value for key, value in animation_prompts.items()}
+    animation_prompts = json.dumps(proper_json_data, indent=2)
+    animation_prompts = re.sub(r',\s*}', '}', animation_prompts)
+    animation_prompts = json.loads(animation_prompts.strip())
+
     parsed_animation_prompts = {}
     for key, value in animation_prompts.items():
         if check_is_number(key):  #default case 0:(1 + t %5), 30:(5-t%2)
             parsed_animation_prompts[key] = value
         else:  #math on the left hand side case 0:(1 + t %5), maxKeyframes/2:(5-t%2)
             parsed_animation_prompts[int(numexpr.evaluate(key))] = value
-    
+
     sorted_prompts = sorted(parsed_animation_prompts.items(), key=lambda item: int(item[0]))
-    
+
     #Setup containers for interpolated prompts
     cur_prompt_series = pd.Series([np.nan for a in range(max_frames)])
     nxt_prompt_series = pd.Series([np.nan for a in range(max_frames)])
@@ -168,65 +218,49 @@ def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, 
     weight_series = [np.nan] * max_frames
 
     #in case there is only one keyed promt, set all prompts to that prompt
-    if len(sorted_prompts) - 1 == 0:
-        for i in range(0, len(cur_prompt_series)-1):           
-            current_prompt = sorted_prompts[0][1]           
-            cur_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
-            nxt_prompt_series[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
-    
+    for i in range(0, len(cur_prompt_series)):
+        for key, value in sorted_prompts:
+            key = int(key)
+            if i <= key:
+                current_prompt = value
+                break
+
+        cur_prompt_series[i] = current_prompt
+        nxt_prompt_series[i] = current_prompt
+
     #Initialized outside of loop for nan check
     current_key = 0
     next_key = 0
 
     # For every keyframe prompt except the last
     for i in range(0, len(sorted_prompts) - 1):
-        # Get current and next keyframe
         current_key = int(sorted_prompts[i][0])
         next_key = int(sorted_prompts[i + 1][0])
 
-        # Ensure there's no weird ordering issues or duplication in the animation prompts
-        # (unlikely because we sort above, and the json parser will strip dupes)
-        if current_key >= next_key:
-            print(f"WARNING: Sequential prompt keyframes {i}:{current_key} and {i + 1}:{next_key} are not monotonously increasing; skipping interpolation.")
-            continue
-
-        # Get current and next keyframes' positive and negative prompts (if any)
         current_prompt = sorted_prompts[i][1]
         next_prompt = sorted_prompts[i + 1][1]
 
-        # Calculate how much to shift the weight from current to next prompt at each frame.
         weight_step = 1 / (next_key - current_key)
 
-        for f in range(current_key, next_key):
-            next_weight = weight_step * (f - current_key)
-            current_weight = 1 - next_weight
+        for f in range(max_frames):
+            if f < current_key:
+                # Frame is before the first keyframe, use the first keyframe prompt
+                cur_prompt_series[f] = current_prompt
+                nxt_prompt_series[f] = current_prompt
+                current_weight = 1.0  # Set current_weight unconditionally
+            elif current_key <= f < next_key:
+                # Frame is between keyframes, interpolate prompts
+                next_weight = weight_step * (f - current_key)
+                current_weight = 1 - next_weight
 
-            #add the appropriate prompts and weights to their respective containers.
-            #print(weight_series)
-            #print(weight_series[f])
-            cur_prompt_series[f] = ''
-            nxt_prompt_series[f] = ''
-            weight_series[f] = 0.0
+                cur_prompt_series[f] = current_prompt
+                nxt_prompt_series[f] = next_prompt
+            else:
+                # Frame is after the last keyframe, use the last keyframe prompt
+                cur_prompt_series[f] = next_prompt
+                nxt_prompt_series[f] = next_prompt
 
-            cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
-            nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
-
-            weight_series[f] += current_weight
-    
-        current_key = next_key
-        next_key = max_frames
-        current_weight = 0.0
-        #second loop to catch any nan runoff
-        for f in range(max(current_key, 0), min(next_key, len(cur_prompt_series))):
-             next_weight = weight_step * (f - current_key)
-
-             #add the appropriate prompts and weights to their respective containers.
-             cur_prompt_series[f] = ''
-             nxt_prompt_series[f] = ''
-             weight_series[f] = current_weight
-
-             cur_prompt_series[f] += (str(pre_text) + " " + str(current_prompt) + " " + str(app_text))
-             nxt_prompt_series[f] += (str(pre_text) + " " + str(next_prompt) + " " + str(app_text))
+            weight_series[f] = current_weight
 
     #Evaluate the current and next prompt's expressions
     cur_prompt_series[current_frame] = prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)
