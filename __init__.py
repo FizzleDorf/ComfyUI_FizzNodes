@@ -57,7 +57,8 @@ from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWav
 from .ScheduledNodes import (
     ValueSchedule, PromptSchedule, PromptScheduleNodeFlow, PromptScheduleNodeFlowEnd, PromptScheduleEncodeSDXL,
     StringSchedule, BatchPromptSchedule, BatchValueSchedule, BatchPromptScheduleEncodeSDXL, BatchStringSchedule,
-    BatchValueScheduleLatentInput, BatchPromptScheduleEncodeSDXLLatentInput, BatchPromptScheduleLatentInput #, BatchGLIGENSchedule
+    BatchValueScheduleLatentInput, BatchPromptScheduleEncodeSDXLLatentInput, BatchPromptScheduleLatentInput
+    #, BatchPromptScheduleNodeFlowEnd #, BatchGLIGENSchedule
 )
 
 NODE_CLASS_MAPPINGS = {
@@ -84,6 +85,7 @@ NODE_CLASS_MAPPINGS = {
     "BatchValueScheduleLatentInput": BatchValueScheduleLatentInput,
     "BatchPromptScheduleSDXLLatentInput":BatchPromptScheduleEncodeSDXLLatentInput,
     "BatchPromptScheduleLatentInput":BatchPromptScheduleLatentInput,
+    #"BatchPromptScheduleNodeFlowEnd":BatchPromptScheduleNodeFlowEnd,
     #"BatchGLIGENSchedule": BatchGLIGENSchedule,
 
 }
