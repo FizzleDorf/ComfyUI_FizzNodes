@@ -279,7 +279,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
             "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
             "text_g": ("STRING", {"multiline": True, "default": "CLIP_G"}), "clip": ("CLIP", ),
             "text_l": ("STRING", {"multiline": True, "default": "CLIP_L"}), "clip": ("CLIP", ),
-            "num_latents": ("Latent", ),
+            "num_latents": ("LATENT", ),
             "print_output":("BOOLEAN", {"default": False}),},
             "optional": {"pre_text_G": ("STRING", {"multiline": False,}),# "forceInput": True}),
             "app_text_G": ("STRING", {"multiline": False,}),# "forceInput": True}),
