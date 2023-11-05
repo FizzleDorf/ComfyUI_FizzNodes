@@ -191,88 +191,6 @@ def interpolate_string(animation_prompts, max_frames, current_frame, pre_text, a
     # Output methods depending if the prompts are the same or if the current frame is a keyframe.
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     return (cur_prompt_series[current_frame])
-
-def interpolate_prompts(animation_prompts, max_frames, current_frame, pre_text, app_text, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4): #parse the conditioning strength and determine in-betweens.
-    #Get prompts sorted by keyframe
-    max_f = max_frames #needed for numexpr even though it doesn't look like it's in use.
-
-    proper_json_data = {str(key): value for key, value in animation_prompts.items()}
-    animation_prompts = json.dumps(proper_json_data, indent=2)
-    animation_prompts = re.sub(r',\s*}', '}', animation_prompts)
-    animation_prompts = json.loads(animation_prompts.strip())
-
-    parsed_animation_prompts = {}
-    for key, value in animation_prompts.items():
-        if check_is_number(key):  #default case 0:(1 + t %5), 30:(5-t%2)
-            parsed_animation_prompts[key] = value
-        else:  #math on the left hand side case 0:(1 + t %5), maxKeyframes/2:(5-t%2)
-            parsed_animation_prompts[int(numexpr.evaluate(key))] = value
-
-    sorted_prompts = sorted(parsed_animation_prompts.items(), key=lambda item: int(item[0]))
-
-    #Setup containers for interpolated prompts
-    cur_prompt_series = pd.Series([np.nan for a in range(max_frames)])
-    nxt_prompt_series = pd.Series([np.nan for a in range(max_frames)])
-
-    #simple array for strength values
-    weight_series = [np.nan] * max_frames
-
-    #in case there is only one keyed promt, set all prompts to that prompt
-    for i in range(0, len(cur_prompt_series)):
-        for key, value in sorted_prompts:
-            key = int(key)
-            if i <= key:
-                current_prompt = value
-                break
-
-        cur_prompt_series[i] = current_prompt
-        nxt_prompt_series[i] = current_prompt
-
-    #Initialized outside of loop for nan check
-    current_key = 0
-    next_key = 0
-
-    # For every keyframe prompt except the last
-    for i in range(0, len(sorted_prompts) - 1):
-        current_key = int(sorted_prompts[i][0])
-        next_key = int(sorted_prompts[i + 1][0])
-
-        current_prompt = sorted_prompts[i][1]
-        next_prompt = sorted_prompts[i + 1][1]
-
-        weight_step = 1 / (next_key - current_key)
-
-        for f in range(max_frames):
-            if f < current_key:
-                # Frame is before the first keyframe, use the first keyframe prompt
-                cur_prompt_series[f] = current_prompt
-                nxt_prompt_series[f] = current_prompt
-                current_weight = 1.0  # Set current_weight unconditionally
-            elif current_key <= f < next_key:
-                # Frame is between keyframes, interpolate prompts
-                next_weight = weight_step * (f - current_key)
-                current_weight = 1 - next_weight
-
-                cur_prompt_series[f] = current_prompt
-                nxt_prompt_series[f] = next_prompt
-            else:
-                # Frame is after the last keyframe, use the last keyframe prompt
-                cur_prompt_series[f] = next_prompt
-                nxt_prompt_series[f] = next_prompt
-
-            weight_series[f] = current_weight
-
-    #Evaluate the current and next prompt's expressions
-    cur_prompt_series[current_frame] = prepare_prompt(cur_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)
-    nxt_prompt_series[current_frame] = prepare_prompt(nxt_prompt_series[current_frame], max_frames, current_frame, prompt_weight_1, prompt_weight_2, prompt_weight_3, prompt_weight_4)
-
-    #Show the to/from prompts with evaluated expressions for transparency.
-    print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[current_frame], "\n", "Next Prompt: ", nxt_prompt_series[current_frame], "\n", "Strength : ", weight_series[current_frame], "\n")
-
-    #Output methods depending if the prompts are the same or if the current frame is a keyframe.
-    #if it is an in-between frame and the prompts differ, composable diffusion will be performed.
-    return (cur_prompt_series[current_frame], nxt_prompt_series[current_frame], weight_series[current_frame])
-
 def PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip):  
     if str(cur_prompt) == str(nxt_prompt):
         tokens = clip.tokenize(str(cur_prompt))
@@ -307,7 +225,7 @@ def SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height,
     cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
     return [[cond, {"pooled_output": pooled, "width": width, "height": height, "crop_w": crop_w, "crop_h": crop_h, "target_width": target_width, "target_height": target_height}]]
 
-def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames, current_frame, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height): #parse the conditioning strength and determine in-betweens.
+def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames, current_frame, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output): #parse the conditioning strength and determine in-betweens.
         #Get prompts sorted by keyframe
         max_f = max_frames #needed for numexpr even though it doesn't look like it's in use.
         parsed_animation_promptsG = {}
@@ -381,8 +299,6 @@ def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames,
                 current_weight = 1 - next_weight
                 
                 #add the appropriate prompts and weights to their respective containers.
-                #print(weight_series)
-                #print(weight_series[f])
                 cur_prompt_series_G[f] = ''
                 nxt_prompt_series_G[f] = ''
                 weight_series[f] = 0.0
@@ -436,8 +352,6 @@ def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames,
                 current_weight = 1 - next_weight
                 
                 #add the appropriate prompts and weights to their respective containers.
-                #print(weight_series)
-                #print(weight_series[f])
                 cur_prompt_series_L[f] = ''
                 nxt_prompt_series_L[f] = ''
                 weight_series[f] = 0.0
@@ -467,14 +381,14 @@ def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames,
         nxt_prompt_series_G[current_frame] = prepare_prompt(nxt_prompt_series_G[current_frame], max_frames, current_frame, pw_a, pw_b, pw_c, pw_d) 
         cur_prompt_series_L[current_frame] = prepare_prompt(cur_prompt_series_L[current_frame], max_frames, current_frame, pw_a, pw_b, pw_c, pw_d)
         nxt_prompt_series_L[current_frame] = prepare_prompt(nxt_prompt_series_L[current_frame], max_frames, current_frame, pw_a, pw_b, pw_c, pw_d)       
+        if print_output == True:
+            #Show the to/from prompts with evaluated expressions for transparency.
+            print("\n", "G_Clip:", "\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series_G[current_frame], "\n", "Next Prompt: ", nxt_prompt_series_G[current_frame], "\n", "Strength : ", weight_series[current_frame], "\n")
 
-        #Show the to/from prompts with evaluated expressions for transparency.
-        print("\n", "G_Clip:", "\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series_G[current_frame], "\n", "Next Prompt: ", nxt_prompt_series_G[current_frame], "\n", "Strength : ", weight_series[current_frame], "\n")
+            print("\n", "L_Clip:", "\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series_L[current_frame], "\n", "Next Prompt: ", nxt_prompt_series_L[current_frame], "\n", "Strength : ", weight_series[current_frame], "\n")
 
-        print("\n", "L_Clip:", "\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series_L[current_frame], "\n", "Next Prompt: ", nxt_prompt_series_L[current_frame], "\n", "Strength : ", weight_series[current_frame], "\n")
         #Output methods depending if the prompts are the same or if the current frame is a keyframe.
         #if it is an in-between frame and the prompts differ, composable diffusion will be performed.
-         
         current_cond = SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, cur_prompt_series_G[current_frame], cur_prompt_series_L[current_frame])
 
         if str(cur_prompt_series_G[current_frame]) == str(nxt_prompt_series_G[current_frame]) and str(cur_prompt_series_L[current_frame]) == str(nxt_prompt_series_L[current_frame]):           
