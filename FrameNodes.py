@@ -45,8 +45,6 @@ class StringConcatenate:
     
         text_list = text_list[:-2]
 
-        print(text_list)
-
         return (text_list,)
     
 class InitNodeFrame:
@@ -82,14 +80,12 @@ class InitNodeFrame:
 
         if previous_frame:
             prev_frame = previous_frame.thisFrame
-            print(f"Previous Frame Found {prev_frame['general_positive']}")
             new_frame["general_positive"] = prev_frame["general_positive"]
             new_frame["general_negative"] = prev_frame["general_negative"]
             new_frame["clip"] = prev_frame["clip"]
             self.frames = previous_frame.frames
 
         if general_positive:
-            print(f"General positive {general_positive}")
             new_frame["general_positive"] = general_positive
         
         if general_negative:
@@ -100,9 +96,6 @@ class InitNodeFrame:
 
         if clip:
             new_frame["clip"] = clip 
-
-        print(f"Positive Text: {new_positive_text}") 
-        print(f"Negative Text: {new_negative_text}") 
 
         pos_tokens = new_frame["clip"].tokenize(new_positive_text)        
         pos_cond, pos_pooled = new_frame["clip"].encode_from_tokens(pos_tokens, return_pooled=True)
@@ -198,7 +191,5 @@ class FrameConcatenate:
                     text_list += f', {new_frame["general_negative"]}'
             text_list += f'",\n'
         text_list = text_list[:-2]
-
-        print(text_list)
 
         return (text_list,)
