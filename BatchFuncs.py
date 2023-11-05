@@ -66,9 +66,8 @@ def batch_split_weighted_subprompts(text, pre_text, app_text):
     return pos, neg
 
 def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, prompt_weight_1=[],
-                              prompt_weight_2=[], prompt_weight_3=[],
-                              prompt_weight_4=[], Is_print = False):  # parse the conditioning strength and determine in-betweens.
-    # Get prompts sorted by keyframe
+                              prompt_weight_2=[], prompt_weight_3=[], prompt_weight_4=[], Is_print = False):
+
     max_f = max_frames  # needed for numexpr even though it doesn't look like it's in use.
     parsed_animation_prompts = {}
     for key, value in animation_prompts.items():
@@ -122,8 +121,6 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
             current_weight = 1 - next_weight
 
             # add the appropriate prompts and weights to their respective containers.
-            # print(weight_series)
-            # print(weight_series[f])
             cur_prompt_series[f] = ''
             nxt_prompt_series[f] = ''
             weight_series[f] = 0.0
@@ -159,8 +156,6 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
         prompt_weight_4 = tuple([prompt_weight_4] * max_frames)
 
     # Evaluate the current and next prompt's expressions
-    print(cur_prompt_series)
-
     for i in range(0,len(cur_prompt_series)):
         cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i],
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
@@ -180,11 +175,6 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     pooled_out = []
     cond_out = []
 
-    group_size = 4
-
-    intermediate_pooled = []
-    intermediate_cond = []
-
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
@@ -199,18 +189,9 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output", pooled_from)
 
-        intermediate_pooled.append(interpolated_pooled)
-        intermediate_cond.append(interpolated_cond)
+        pooled_out.append(interpolated_pooled)
+        cond_out.append(interpolated_cond)
 
-        if len(intermediate_pooled) == group_size or i == len(cur_prompt_series) - 1:
-            pooled_group = torch.cat(intermediate_pooled, dim=0)
-            cond_group = torch.cat(intermediate_cond, dim=0)
-
-            pooled_out.append(pooled_group)
-            cond_out.append(cond_group)
-
-            intermediate_pooled = []
-            intermediate_cond = []
 
     final_pooled_output = torch.cat(pooled_out, dim=0)
     final_conditioning = torch.cat(cond_out, dim=0)
@@ -342,8 +323,6 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
             current_weight = 1 - next_weight
 
             # add the appropriate prompts and weights to their respective containers.
-            # print(weight_series)
-            # print(weight_series[f])
             if f < max_frames:
                 cur_prompt_series_G[f] = ''
                 nxt_prompt_series_G[f] = ''
@@ -398,8 +377,6 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
             current_weight = 1 - next_weight
 
             # add the appropriate prompts and weights to their respective containers.
-            # print(weight_series)
-            # print(weight_series[f])
             if f < max_frames:
                 cur_prompt_series_L[f] = ''
                 nxt_prompt_series_L[f] = ''
@@ -435,7 +412,6 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
                                                              pw_a, pw_b, pw_c, pw_d)
         nxt_prompt_series_L[i] = prepare_batch_prompt(nxt_prompt_series_L[i], max_frames,
                                                              pw_a, pw_b, pw_c, pw_d)
-        #if Is_print == True:
 
     current_conds = []
     next_conds = []
@@ -444,6 +420,14 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
                                 cur_prompt_series_G[i], cur_prompt_series_L[i]))
         next_conds.append(SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height,
                                 nxt_prompt_series_G[i], nxt_prompt_series_L[i]))
+
+    if Is_print == True:
+        # Show the to/from prompts with evaluated expressions for transparency.
+        for i in range(len(cur_prompt_series)):
+            print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt G: ", cur_prompt_series_G[i],
+                  "\n", "Current Prompt L: ", cur_prompt_series_L[i], "\n", "Next Prompt G: ", nxt_prompt_series_G[i],
+                  "\n", "Next Prompt L : ", nxt_prompt_series_L[i],  "\n"), "\n", "Current weight: ", weight_series[i]
+
     return BatchPoolAnimConditioningSDXL(current_conds, next_conds, weight_series, clip)
 
 

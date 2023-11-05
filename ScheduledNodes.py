@@ -10,7 +10,7 @@ import json
 
 
 from .ScheduleFuncs import (
-    check_is_number, interpolate_prompts, interpolate_prompts_SDXL, PoolAnimConditioning,
+    check_is_number, interpolate_prompts_SDXL, PoolAnimConditioning,
     interpolate_string, addWeighted, reverseConcatenation, split_weighted_subprompts
 )
 from .BatchFuncs import interpolate_prompt_series, BatchPoolAnimConditioning, BatchInterpolatePromptsSDXL, batch_split_weighted_subprompts #, BatchGLIGENConditioning
@@ -159,11 +159,7 @@ class BatchPromptScheduleLatentInput:
         inputText = re.sub(r',\s*}', '}', inputText)
 
         animation_prompts = json.loads(inputText.strip())
-        print("animation_prompts :", animation_prompts)
         pos, neg = batch_split_weighted_subprompts(animation_prompts, pre_text, app_text)
-
-        print("pos :", pos)
-        print("neg :", neg)
 
         pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_series(pos, max_frames, pre_text,
                                                                            app_text, pw_a, pw_b, pw_c, pw_d,
@@ -327,7 +323,6 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
 
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, num_latents, print_output, pw_a, pw_b, pw_c, pw_d):
         max_frames = sum(tensor.size(0) for tensor in num_latents.values())
-        print("max_frames", max_frames)
         inputTextG = str("{" + text_g + "}")
         inputTextL = str("{" + text_l + "}")
         inputTextG = re.sub(r',\s*}', '}', inputTextG)
@@ -434,12 +429,11 @@ class PromptScheduleNodeFlowEnd:
             text = text[:-1]
         if text[0] == ",":
             text = text[:0]
+
         inputText = str("{" + text + "}")
-
-        print(inputText)
         inputText = re.sub(r',\s*}', '}', inputText)
-
         animation_prompts = json.loads(inputText.strip())
+
         pos, neg = batch_split_weighted_subprompts(animation_prompts, pre_text, app_text)
 
         pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_series(pos, max_frames, pre_text, app_text, pw_a,
@@ -481,11 +475,9 @@ class BatchPromptScheduleNodeFlowEnd:
         if text[0] == ",":
             text = text[:0]
         inputText = str("{" + text + "}")
-
-        print(inputText)
         inputText = re.sub(r',\s*}', '}', inputText)
-
         animation_prompts = json.loads(inputText.strip())
+
         pos, neg = batch_split_weighted_subprompts(animation_prompts, pre_text, app_text)
 
         pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_series(pos, max_frames, pre_text, app_text, pw_a,
@@ -535,6 +527,7 @@ class BatchGLIGENSchedule:
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
+
         cur_series, nxt_series, weight_series = interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, pw_a, pw_b, pw_c, pw_d, print_output)
         out = []
         for i in range(0, max_frames - 1):
