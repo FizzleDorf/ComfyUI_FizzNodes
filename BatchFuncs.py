@@ -45,11 +45,8 @@ def batch_split_weighted_subprompts(text, pre_text, app_text):
     for frame, prompt in text.items():
         negative_prompts = ""
         positive_prompts = ""
-
-        # Check if the last character is '0' and remove it
-
-
         prompt_split = prompt.split("--neg")
+
         if len(prompt_split) > 1:
             positive_prompts, negative_prompts = prompt_split[0], prompt_split[1]
         else:

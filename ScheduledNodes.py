@@ -65,16 +65,16 @@ class PromptSchedule:
             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
             }}
 
-    RETURN_TYPES = ("CONDITIONING", )
+    RETURN_TYPES = ("CONDITIONING", "CONDITIONING",)
+    RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
-
     CATEGORY = "FizzNodes/ScheduleNodes"
 
     def animate(self, text, max_frames, print_output, current_frame, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
-
         animation_prompts = json.loads(inputText.strip())
+
         pos, neg = batch_split_weighted_subprompts(animation_prompts, pre_text, app_text)
 
         pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_series(pos, max_frames, pre_text, app_text, pw_a,
@@ -108,6 +108,7 @@ class BatchPromptSchedule:
                              }}
 
     RETURN_TYPES = ("CONDITIONING", "CONDITIONING",)
+    RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes/BatchScheduleNodes"
@@ -148,6 +149,7 @@ class BatchPromptScheduleLatentInput:
                              }}
 
     RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "LATENT", )
+    RETURN_NAMES = ("POS", "NEG", "INPUT_LATENTS",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes/BatchScheduleNodes"
@@ -379,9 +381,7 @@ class PromptScheduleNodeFlow:
                              "max_frames": ("INT", {"default": 0.0, "min": 0.0, "max": 9999.0, "step": 1.0,})}} # "forceInput": True}),}}
     
     RETURN_TYPES = ("INT","STRING",)
-
     FUNCTION = "addString"
-
     CATEGORY = "FizzNodes/ScheduleNodes"
 
     def addString(self, text, in_text='', max_frames=0, num_frames=0):
@@ -419,7 +419,8 @@ class PromptScheduleNodeFlowEnd:
                             "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}),# "forceInput": True}),
                             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}),# "forceInput": True}),
                             }}
-    RETURN_TYPES = ("CONDITIONING",)
+    RETURN_TYPES = ("CONDITIONING","CONDITIONING",)
+    RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes/ScheduleNodes"
@@ -464,6 +465,7 @@ class BatchPromptScheduleNodeFlowEnd:
                             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}),# "forceInput": True}),
                             }}
     RETURN_TYPES = ("CONDITIONING",)
+
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes/BatchScheduleNodes"
