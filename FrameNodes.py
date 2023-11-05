@@ -26,7 +26,7 @@ class StringConcatenate:
     RETURN_TYPES = ("STRING",)
     FUNCTION = "frame_concatenate_list"
 
-    CATEGORY = "FizzNodes/CustomNodes"
+    CATEGORY = "FizzNodes/FrameNodes"
 
     def frame_concatenate_list(self, text_a, text_b, frame_b, text_c=None, frame_c=None, text_d=None, frame_d=None, text_e=None, frame_e=None, text_f=None, frame_f=None, text_g=None, frame_g=None):
         
@@ -70,7 +70,7 @@ class InitNodeFrame:
     RETURN_TYPES = ("FIZZFRAME","CONDITIONING","CONDITIONING",)
     FUNCTION = "create_frame"
 
-    CATEGORY = "FizzNodes/CustomNodes"
+    CATEGORY = "FizzNodes/FrameNodes"
 
     def create_frame(self, frame, positive_text, negative_text=None, general_positive=None, general_negative=None, previous_frame=None, clip=None):
         new_frame = {
@@ -131,7 +131,7 @@ class NodeFrame:
     RETURN_TYPES = ("FIZZFRAME","CONDITIONING","CONDITIONING",)
     FUNCTION = "create_frame"
 
-    CATEGORY = "FizzNodes/CustomNodes"
+    CATEGORY = "FizzNodes/FrameNodes"
 
     def create_frame(self, frame, previous_frame, positive_text, negative_text=None):
         self.frames = previous_frame.frames
@@ -174,7 +174,7 @@ class FrameConcatenate:
     RETURN_TYPES = ("STRING",)
     FUNCTION = "frame_concatenate"
 
-    CATEGORY = "FizzNodes/CustomNodes"
+    CATEGORY = "FizzNodes/FrameNodes"
 
     def frame_concatenate(self, frame):
         text_list = ""
