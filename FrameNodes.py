@@ -49,51 +49,123 @@ class StringConcatenate:
 
         return (text_list,)
     
-class NodeFrame:
-
+class InitNodeFrame:
     def __init__(self):
         self.frames = {}
+        self.thisFrame = {}
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
+                "frame": ("INT", {"default": 0, "min": 0}),
                 "positive_text": ("STRING", {"multiline": True}),
-                "frame": ("INT", {"default": 0, "min": 0})
             },
             "optional": {
                 "negative_text": ("STRING", {"multiline": True}),
-                "general_negative": ("STRING", {"multiline": True}),
                 "general_positive": ("STRING", {"multiline": True}),
+                "general_negative": ("STRING", {"multiline": True}),
                 "previous_frame": ("FIZZFRAME", {"forceInput": True}),
+                "clip": ("CLIP",),
             }
         }
-    RETURN_TYPES = ("FIZZFRAME","STRING", "STRING",)
+    RETURN_TYPES = ("FIZZFRAME","CONDITIONING","CONDITIONING",)
     FUNCTION = "create_frame"
 
     CATEGORY = "FizzNodes/CustomNodes"
 
-    def create_frame(self, positive_text, frame, negative_text=None, general_negative=None, general_positive=None, previous_frame=None):
+    def create_frame(self, frame, positive_text, negative_text=None, general_positive=None, general_negative=None, previous_frame=None, clip=None):
         new_frame = {
             "positive_text": positive_text,
-            "negative_text": negative_text
+            "negative_text": negative_text,
         }
 
         if previous_frame:
-            new_frame.general_positive = previous_frame.general_positive
-            new_frame.general_negative = previous_frame.general_negative
+            prev_frame = previous_frame.thisFrame
+            print(f"Previous Frame Found {prev_frame['general_positive']}")
+            new_frame["general_positive"] = prev_frame["general_positive"]
+            new_frame["general_negative"] = prev_frame["general_negative"]
+            new_frame["clip"] = prev_frame["clip"]
+            self.frames = previous_frame.frames
 
         if general_positive:
-            new_frame.general_positive = general_positive
+            print(f"General positive {general_positive}")
+            new_frame["general_positive"] = general_positive
         
         if general_negative:
-            new_frame.general_negative = general_negative
+            new_frame["general_negative"] = general_negative
+
+        new_positive_text = f"{positive_text}, {new_frame['general_positive']}"
+        new_negative_text = f"{negative_text}, {new_frame['general_negative']}"
+
+        if clip:
+            new_frame["clip"] = clip 
+
+        print(f"Positive Text: {new_positive_text}") 
+        print(f"Negative Text: {new_negative_text}") 
+
+        pos_tokens = new_frame["clip"].tokenize(new_positive_text)        
+        pos_cond, pos_pooled = new_frame["clip"].encode_from_tokens(pos_tokens, return_pooled=True)
+        new_frame["pos_conditioning"] = {"cond": pos_cond, "pooled": pos_pooled}
+
+        neg_tokens = new_frame["clip"].tokenize(new_negative_text)
+        neg_cond, neg_pooled = new_frame["clip"].encode_from_tokens(neg_tokens, return_pooled=True)
+        new_frame["neg_conditioning"] = {"cond": neg_cond, "pooled": neg_pooled}
 
         self.frames[frame] = new_frame
-        new_positive_text = f"{positive_text}, {general_positive}"
-        new_negative_text = f"{negative_text}, {general_negative}"
+        self.thisFrame = new_frame
 
-        return (self, new_positive_text, new_negative_text,)
+        return (self, [[pos_cond, {"pooled_output": pos_pooled}]], [[neg_cond, {"pooled_output": neg_pooled}]])
+
+class NodeFrame:
+
+    def __init__(self):
+        self.frames = {}
+        self.thisFrame = {}
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "frame": ("INT", {"default": 0, "min": 0}),
+                "previous_frame": ("FIZZFRAME", {"forceInput": True}),
+                "positive_text": ("STRING", {"multiline": True}),
+            },
+            "optional": {
+                "negative_text": ("STRING", {"multiline": True}),
+            }
+        }
+    RETURN_TYPES = ("FIZZFRAME","CONDITIONING","CONDITIONING",)
+    FUNCTION = "create_frame"
+
+    CATEGORY = "FizzNodes/CustomNodes"
+
+    def create_frame(self, frame, previous_frame, positive_text, negative_text=None):
+        self.frames = previous_frame.frames
+        prev_frame = previous_frame.thisFrame
+        
+        new_positive_text = f"{positive_text}, {prev_frame['general_positive']}"
+        new_negative_text = f"{negative_text}, {prev_frame['general_negative']}"
+
+        pos_tokens = prev_frame["clip"].tokenize(new_positive_text)        
+        pos_cond, pos_pooled = prev_frame["clip"].encode_from_tokens(pos_tokens, return_pooled=True)
+
+        neg_tokens = prev_frame["clip"].tokenize(new_negative_text)
+        neg_cond, neg_pooled = prev_frame["clip"].encode_from_tokens(neg_tokens, return_pooled=True)
+
+        new_frame = {
+            "positive_text": positive_text,
+            "negative_text": negative_text,
+            "general_positive": prev_frame["general_positive"],
+            "general_negative": prev_frame["general_negative"],
+            "clip": prev_frame["clip"],
+            "pos_conditioning": {"cond": pos_cond, "pooled": pos_pooled},
+            "neg_conditioning": {"cond": neg_cond, "pooled": neg_pooled},
+        }
+        self.thisFrame = new_frame
+        self.frames[frame] = new_frame
+
+        return (self, [[pos_cond, {"pooled_output": pos_pooled}]], [[neg_cond, {"pooled_output": neg_pooled}]])
 
 class FrameConcatenate:
     def __init__(self):

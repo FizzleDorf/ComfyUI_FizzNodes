@@ -60,7 +60,7 @@ from .ScheduledNodes import (
     BatchValueScheduleLatentInput, BatchPromptScheduleEncodeSDXLLatentInput, BatchPromptScheduleLatentInput
     #, BatchPromptScheduleNodeFlowEnd #, BatchGLIGENSchedule
 )
-from .FrameNodes import FrameConcatenate, NodeFrame, StringConcatenate
+from .FrameNodes import FrameConcatenate, InitNodeFrame, NodeFrame, StringConcatenate
 
 NODE_CLASS_MAPPINGS = {
     "Lerp": Lerp,
@@ -90,6 +90,7 @@ NODE_CLASS_MAPPINGS = {
     #"BatchGLIGENSchedule": BatchGLIGENSchedule,
 
     "StringConcatenate":StringConcatenate,
+    "Init FizzFrame":InitNodeFrame,
     "FizzFrame":NodeFrame,
     "FizzFrameConcatenate":FrameConcatenate,
 }
