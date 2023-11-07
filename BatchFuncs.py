@@ -75,6 +75,13 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
 
     sorted_prompts = sorted(parsed_animation_prompts.items(), key=lambda item: int(item[0]))
 
+    # Automatically set the first keyframe to 0 if it's missing
+    if sorted_prompts[0][0] != "0":
+        sorted_prompts.insert(0, ("0", sorted_prompts[0][1]))
+
+    # Automatically set the last keyframe to the maximum number of frames
+    if sorted_prompts[-1][0] != str(max_frames):
+        sorted_prompts.append((str(max_frames), sorted_prompts[-1][1]))
     # Setup containers for interpolated prompts
     cur_prompt_series = pd.Series([np.nan for a in range(max_frames)])
     nxt_prompt_series = pd.Series([np.nan for a in range(max_frames)])
@@ -129,16 +136,17 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
         current_key = next_key
         next_key = max_frames
         current_weight = 0.0
-        # second loop to catch any nan runoff
-        for f in range(current_key, next_key):
-            next_weight = weight_step * (f - current_key)
 
-            # add the appropriate prompts and weights to their respective containers.
-            cur_prompt_series[f] = ''
-            nxt_prompt_series[f] = ''
-            weight_series[f] = current_weight
-            cur_prompt_series[f] = str(current_prompt)
-            nxt_prompt_series[f] = str(next_prompt)
+        ## second loop to catch any nan runoff
+        #for f in range(current_key, next_key):
+        #    next_weight = weight_step * (f - current_key)
+#
+        #    # add the appropriate prompts and weights to their respective containers.
+        #    cur_prompt_series[f] = ''
+        #    nxt_prompt_series[f] = ''
+        #    weight_series[f] = current_weight
+        #    cur_prompt_series[f] = str(current_prompt)
+        #    nxt_prompt_series[f] = str(next_prompt)
 
     if isinstance(prompt_weight_1, int):
         prompt_weight_1 = tuple([prompt_weight_1] * max_frames)
