@@ -68,7 +68,7 @@ class PromptSchedule:
     RETURN_TYPES = ("CONDITIONING", "CONDITIONING",)
     RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
-    CATEGORY = "FizzNodes/ScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def animate(self, text, max_frames, print_output, current_frame, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
@@ -111,7 +111,7 @@ class BatchPromptSchedule:
     RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, text, max_frames, print_output, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
@@ -152,7 +152,7 @@ class BatchPromptScheduleLatentInput:
     RETURN_NAMES = ("POS", "NEG", "INPUT_LATENTS",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, text, num_latents, print_output, clip, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
         max_frames = sum(tensor.size(0) for tensor in num_latents.values())
@@ -196,7 +196,7 @@ class StringSchedule:
     RETURN_TYPES = ("STRING",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/ScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def animate(self, text, max_frames, current_frame, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
@@ -247,7 +247,7 @@ class BatchStringSchedule:
     RETURN_TYPES = ("STRING",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, text, max_frames, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
@@ -284,7 +284,7 @@ class BatchPromptScheduleEncodeSDXL:
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, print_output, pw_a, pw_b, pw_c, pw_d):
         inputTextG = str("{" + text_g + "}")
@@ -321,7 +321,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
     RETURN_TYPES = ("CONDITIONING", "LATENT",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, num_latents, print_output, pw_a, pw_b, pw_c, pw_d):
         max_frames = sum(tensor.size(0) for tensor in num_latents.values())
@@ -359,7 +359,7 @@ class PromptScheduleEncodeSDXL:
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/ScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, current_frame, pw_a, pw_b, pw_c, pw_d):
         inputTextG = str("{" + text_g + "}")
@@ -382,7 +382,7 @@ class PromptScheduleNodeFlow:
     
     RETURN_TYPES = ("INT","STRING",)
     FUNCTION = "addString"
-    CATEGORY = "FizzNodes/ScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def addString(self, text, in_text='', max_frames=0, num_frames=0):
         if in_text:
@@ -423,7 +423,7 @@ class PromptScheduleNodeFlowEnd:
     RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/ScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def animate(self, text, max_frames, print_output, current_frame, clip, pw_a = 0, pw_b = 0, pw_c = 0, pw_d = 0, pre_text = '', app_text = ''):
         if text[-1] == ",":
@@ -468,7 +468,7 @@ class BatchPromptScheduleNodeFlowEnd:
 
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, text, max_frames, print_output, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', current_frame = 0,
                 app_text=''):
@@ -523,7 +523,7 @@ class BatchGLIGENSchedule:
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, conditioning_to, clip, gligen_textbox_model, text, width, height, x, y, max_frames, print_output, pw_a, pw_b, pw_c, pw_d, pre_text='', app_text=''):
         inputText = str("{" + text + "}")
@@ -573,7 +573,7 @@ class ValueSchedule:
     RETURN_TYPES = ("FLOAT", "INT")
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/ScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
     
     def animate(self, text, max_frames, current_frame,):
         t = get_inbetweens(parse_key_frames(text, max_frames), max_frames)
@@ -590,7 +590,7 @@ class BatchValueSchedule:
     RETURN_TYPES = ("FLOAT", "INT")
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, text, max_frames, ):
         t = batch_get_inbetweens(batch_parse_key_frames(text, max_frames), max_frames)
@@ -606,7 +606,7 @@ class BatchValueScheduleLatentInput:
     RETURN_TYPES = ("FLOAT", "INT", "LATENT", )
     FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
     def animate(self, text, num_latents, ):
         num_elements = sum(tensor.size(0) for tensor in num_latents.values())
