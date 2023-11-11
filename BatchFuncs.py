@@ -62,7 +62,7 @@ def batch_split_weighted_subprompts(text, pre_text, app_text):
             neg[frame] = neg[frame][:-1]
     return pos, neg
 
-def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text, prompt_weight_1=[],
+def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_text, app_text, prompt_weight_1=[],
                               prompt_weight_2=[], prompt_weight_3=[], prompt_weight_4=[], Is_print = False):
 
     max_f = max_frames  # needed for numexpr even though it doesn't look like it's in use.
@@ -160,17 +160,22 @@ def interpolate_prompt_series(animation_prompts, max_frames, pre_text, app_text,
     if isinstance(prompt_weight_4, int):
         prompt_weight_4 = tuple([prompt_weight_4] * max_frames)
 
+    index_offset = 0
     # Evaluate the current and next prompt's expressions
-    for i in range(0,len(cur_prompt_series)):
-        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i],
-                                                    prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
-        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i],
-                                                    prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
 
-    if Is_print == True:
-        # Show the to/from prompts with evaluated expressions for transparency.
-        for i in range(len(cur_prompt_series)):
-            print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt: ", cur_prompt_series[i], "\n", "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ", weight_series[i], "\n")
+    for i in range(start_frame,len(cur_prompt_series)):
+        cur_prompt_series[index_offset] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i],
+                                                    prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
+        nxt_prompt_series[index_offset] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i],
+                                                    prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
+        if Is_print == True:
+            # Show the to/from prompts with evaluated expressions for transparency.
+            print("\n", "Max Frames: ", max_frames, "\n", "frame index: ", index_offset, "\n", "Current Prompt: ",
+                  cur_prompt_series[index_offset], "\n", "Next Prompt: ", nxt_prompt_series[index_offset], "\n", "Strength : ",
+                  weight_series[i], "\n")
+        index_offset = index_offset+1
+
+
 
     # Output methods depending if the prompts are the same or if the current frame is a keyframe.
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
