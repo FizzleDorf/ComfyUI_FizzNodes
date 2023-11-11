@@ -61,6 +61,7 @@ from .ScheduledNodes import (
     #, BatchPromptScheduleNodeFlowEnd #, BatchGLIGENSchedule
 )
 from .FrameNodes import FrameConcatenate, InitNodeFrame, NodeFrame, StringConcatenate
+from .HelperNodes import CalculateLatentInterpFrameNumber
 
 NODE_CLASS_MAPPINGS = {
     "Lerp": Lerp,
@@ -93,6 +94,8 @@ NODE_CLASS_MAPPINGS = {
     "Init FizzFrame":InitNodeFrame,
     "FizzFrame":NodeFrame,
     "FizzFrameConcatenate":FrameConcatenate,
+
+    "CalculateLatentInterpFrameNumber": CalculateLatentInterpFrameNumber
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -122,6 +125,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "BatchStringSchedule": "Batch String Schedule 📅🅕🅝",
     "BatchValueScheduleLatentInput": "Batch Value Schedule (Latent Input) 📅🅕🅝",
     "BatchPromptScheduleSDXLLatentInput": "Batch Prompt Schedule SDXL (Latent Input) 📅🅕🅝",
-    "BatchPromptScheduleLatentInput": "Batch Prompt Schedule (Latent Input)📅🅕🅝",
+    "BatchPromptScheduleLatentInput": "Batch Prompt Schedule (Latent Input) 📅🅕🅝",
+    "CalculateLatentInterpFrameNumber": "Calculate Frame Number (Latent Interp) 📅🅕🅝"
 }
 print('\033[34mFizzleDorf Custom Nodes: \033[92mLoaded\033[0m')
