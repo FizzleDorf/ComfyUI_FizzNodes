@@ -7,7 +7,7 @@ class CalculateLatentInterpFrameNumber:
             "required": {
                 "current_frame": ("INT", {"default": 0, "min": 0}),
                 "max_frames": ("INT", {"default": 18, "min": 0}),
-                "batch_size": ("INT", {"default": 4, "min": 0}),
+                "num_latent_inputs": ("INT", {"default": 4, "min": 0}),
             }
         }
     RETURN_TYPES = ("INT", "INT" ,"INT" ,"INT", )

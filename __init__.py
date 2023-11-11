@@ -126,6 +126,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "BatchValueScheduleLatentInput": "Batch Value Schedule (Latent Input) 📅🅕🅝",
     "BatchPromptScheduleSDXLLatentInput": "Batch Prompt Schedule SDXL (Latent Input) 📅🅕🅝",
     "BatchPromptScheduleLatentInput": "Batch Prompt Schedule (Latent Input) 📅🅕🅝",
-    "CalculateLatentInterpFrameNumber": "Calculate Frame Number (Latent Interp) 📅🅕🅝"
+    "CalculateLatentInterpFrameNumber": "Calculate Frame Numbers (Latent Interp) 📅🅕🅝"
 }
 print('\033[34mFizzleDorf Custom Nodes: \033[92mLoaded\033[0m')
