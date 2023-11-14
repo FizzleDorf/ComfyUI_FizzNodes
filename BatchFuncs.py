@@ -148,16 +148,16 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
         #    cur_prompt_series[f] = str(current_prompt)
         #    nxt_prompt_series[f] = str(next_prompt)
 
-    if isinstance(prompt_weight_1, int):
+    if type(prompt_weight_1) in {int, float}:
         prompt_weight_1 = tuple([prompt_weight_1] * max_frames)
 
-    if isinstance(prompt_weight_2, int):
+    if type(prompt_weight_2) in {int, float}:
         prompt_weight_2 = tuple([prompt_weight_2] * max_frames)
 
-    if isinstance(prompt_weight_3, int):
+    if type(prompt_weight_3) in {int, float}:
         prompt_weight_3 = tuple([prompt_weight_3] * max_frames)
 
-    if isinstance(prompt_weight_4, int):
+    if type(prompt_weight_4) in {int, float}:
         prompt_weight_4 = tuple([prompt_weight_4] * max_frames)
 
     index_offset = 0
