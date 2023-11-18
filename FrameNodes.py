@@ -2,25 +2,38 @@ class StringConcatenate:
     def __init__(self):
         pass
 
+    defaultPrompt = """"0" :"",
+    "12" :"",
+    "24" :"",
+    "36" :"",
+    "48" :"",
+    "60" :"",
+    "72" :"",
+    "84" :"",
+    "96" :"",
+    "108" :"",
+    "120" :""
+    """
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "text_a": ("STRING", {"forceInput": True}),
-                "text_b": ("STRING", {"forceInput": True}),
-                "frame_b": ("INT", {"default": 32, "min": 1})
+                "text_a": ("STRING", {"forceInput": True, "multiline": True, "default": ""}),
+                "frame_a": ("INT", {"default": 0}),
+                "text_b": ("STRING", {"forceInput": True, "multiline": True, "default": ""}),
+                "frame_b": ("INT", {"default": 12})
             },
             "optional": {
-                "text_c": ("STRING", {"forceInput": True}),
-                "frame_c": ("INT", {"min": 2}),
-                "text_d": ("STRING", {"forceInput": True}),
-                "frame_d": ("INT", {"min": 3}),
-                "text_e": ("STRING", {"forceInput": True}),
-                "frame_e": ("INT", {"min": 4}),
-                "text_f": ("STRING", {"forceInput": True}),
-                "frame_f": ("INT", {"min": 5}),
-                "text_g": ("STRING", {"forceInput": True}),
-                "frame_g": ("INT", {"min": 6})
+                "text_c": ("STRING", {"forceInput": True, "multiline": True, "default": ""}),
+                "frame_c": ("INT", {"default": 24}),
+                "text_d": ("STRING", {"forceInput": True, "multiline": True, "default": ""}),
+                "frame_d": ("INT", {"default": 36}),
+                "text_e": ("STRING", {"forceInput": True, "multiline": True, "default": ""}),
+                "frame_e": ("INT", {"default": 48}),
+                "text_f": ("STRING", {"forceInput": True, "multiline": True, "default": ""}),
+                "frame_f": ("INT", {"default": 60}),
+                "text_g": ("STRING", {"forceInput": True, "multiline": True, "default": ""}),
+                "frame_g": ("INT", {"default": 72})
             }
         }
     RETURN_TYPES = ("STRING",)
@@ -28,25 +41,41 @@ class StringConcatenate:
 
     CATEGORY = "FizzNodes 📅🅕🅝/FrameNodes"
 
-    def frame_concatenate_list(self, text_a, text_b, frame_b, text_c=None, frame_c=None, text_d=None, frame_d=None, text_e=None, frame_e=None, text_f=None, frame_f=None, text_g=None, frame_g=None):
-        
-        text_list = f'"0": "{text_a}",\n'
-        text_list += f'"{frame_b}": "{text_b}",\n'
-        if frame_c and text_c:
-            text_list += f'"{frame_c}": "{text_c}",\n'
-        if frame_d and text_d:
-            text_list += f'"{frame_d}": "{text_d}",\n'
-        if frame_e and text_e:
-            text_list += f'"{frame_e}": "{text_e}",\n'
-        if frame_f and text_f:
-            text_list += f'"{frame_f}": "{text_f}",\n'
-        if frame_g and text_g:
-            text_list += f'"{frame_g}": "{text_g}",\n'
-    
-        text_list = text_list[:-2]
+    def frame_concatenate_list(self, text_a, frame_a, text_b, frame_b, text_c=None, frame_c=None, text_d=None,
+                               frame_d=None, text_e=None, frame_e=None, text_f=None, frame_f=None, text_g=None,
+                               frame_g=None):
+
+        text_a = text_a.replace('\n', '')
+        text_b = text_b.replace('\n', '')
+        text_c = text_c.replace('\n', '') if text_c is not None else None
+        text_d = text_d.replace('\n', '') if text_d is not None else None
+        text_e = text_e.replace('\n', '') if text_e is not None else None
+        text_f = text_f.replace('\n', '') if text_f is not None else None
+        text_g = text_g.replace('\n', '') if text_g is not None else None
+
+        text_list = f'"{frame_a}": "{text_a}",'
+        text_list += f'"{frame_b}": "{text_b}",'
+
+        if frame_c is not None and text_c is not None:
+            text_list += f'"{frame_c}": "{text_c}",'
+
+        if frame_d is not None and text_d is not None:
+            text_list += f'"{frame_d}": "{text_d}",'
+
+        if frame_e is not None and text_e is not None:
+            text_list += f'"{frame_e}": "{text_e}",'
+
+        if frame_f is not None and text_f is not None:
+            text_list += f'"{frame_f}": "{text_f}",'
+
+        if frame_g is not None and text_g is not None:
+            text_list += f'"{frame_g}": "{text_g}",'
+
+        print(text_list)
 
         return (text_list,)
-    
+
+
 class InitNodeFrame:
     def __init__(self):
         self.frames = {}

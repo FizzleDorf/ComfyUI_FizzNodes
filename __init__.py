@@ -61,7 +61,7 @@ from .ScheduledNodes import (
     #, BatchPromptScheduleNodeFlowEnd #, BatchGLIGENSchedule
 )
 from .FrameNodes import FrameConcatenate, InitNodeFrame, NodeFrame, StringConcatenate
-from .HelperNodes import CalculateLatentInterpFrameNumber
+from .HelperNodes import ConcatStringSingle, convertKeyframeKeysToBatchKeys, CalculateFrameOffset
 
 NODE_CLASS_MAPPINGS = {
     "Lerp": Lerp,
@@ -95,7 +95,9 @@ NODE_CLASS_MAPPINGS = {
     "FizzFrame":NodeFrame,
     "FizzFrameConcatenate":FrameConcatenate,
 
-    "CalculateLatentInterpFrameNumber": CalculateLatentInterpFrameNumber
+    "ConcatStringSingle": ConcatStringSingle,
+    "convertKeyframeKeysToBatchKeys": convertKeyframeKeysToBatchKeys,
+    "CalculateFrameOffset":CalculateFrameOffset,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -121,11 +123,15 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "BatchPromptSchedule": "Batch Prompt Schedule 📅🅕🅝",
     "BatchValueSchedule": "Batch Value Schedule 📅🅕🅝",
     "PromptScheduleEncodeSDXL": "Prompt Schedule SDXL 📅🅕🅝",
-    "BatchPromptScheduleEncodeSDXL": "Batch Prompt Schedule SDXL📅🅕🅝",
+    "BatchPromptScheduleEncodeSDXL": "Batch Prompt Schedule SDXL 📅🅕🅝",
     "BatchStringSchedule": "Batch String Schedule 📅🅕🅝",
     "BatchValueScheduleLatentInput": "Batch Value Schedule (Latent Input) 📅🅕🅝",
     "BatchPromptScheduleSDXLLatentInput": "Batch Prompt Schedule SDXL (Latent Input) 📅🅕🅝",
     "BatchPromptScheduleLatentInput": "Batch Prompt Schedule (Latent Input) 📅🅕🅝",
-    "CalculateLatentInterpFrameNumber": "Calculate Frame Numbers (Latent Interp) 📅🅕🅝"
+    "ConcatStringSingle": "Concat String (Single) 📅🅕🅝",
+    "convertKeyframeKeysToBatchKeys":"Keyframe Keys To Batch Keys 📅🅕🅝",
+    "SelectFrameNumber":"Select Frame Number 📅🅕🅝",
+    "CalculateFrameOffset":"Calculate Frame Offset 📅🅕🅝",
+
 }
 print('\033[34mFizzleDorf Custom Nodes: \033[92mLoaded\033[0m')

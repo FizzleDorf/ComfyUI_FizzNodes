@@ -170,7 +170,7 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
         if Is_print == True:
             # Show the to/from prompts with evaluated expressions for transparency.
-            print("\n", "Max Frames: ", max_frames, "\n", "frame index: ", index_offset, "\n", "Current Prompt: ",
+            print("\n", "Max Frames: ", max_frames, "\n", "frame index: ", (start_frame+index_offset), "\n", "Current Prompt: ",
                   cur_prompt_series[index_offset], "\n", "Next Prompt: ", nxt_prompt_series[index_offset], "\n", "Strength : ",
                   weight_series[i], "\n")
         index_offset = index_offset+1
