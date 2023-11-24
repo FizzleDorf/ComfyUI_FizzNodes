@@ -191,6 +191,17 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
 
         tokens = clip.tokenize(str(nxt_prompt_series[i]))
         cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
+        if i < len(cur_prompt_series):
+            tokens = clip.tokenize(str(cur_prompt_series[i]))
+            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+        else:
+            cond_to, pooled_to = torch.zeros_like(cond_from), torch.zeros_like(pooled_from)
+
+        if i < len(nxt_prompt_series):
+            tokens = clip.tokenize(str(nxt_prompt_series[i]))
+            cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
+        else:
+            cond_from, pooled_from = torch.zeros_like(cond_to), torch.zeros_like(pooled_to)
 
         interpolated_conditioning = addWeighted([[cond_to, {"pooled_output": pooled_to}]],
                                                 [[cond_from, {"pooled_output": pooled_from}]],
