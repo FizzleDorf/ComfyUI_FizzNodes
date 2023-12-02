@@ -71,8 +71,6 @@ class StringConcatenate:
         if frame_g is not None and text_g is not None:
             text_list += f'"{frame_g}": "{text_g}",'
 
-        print(text_list)
-
         return (text_list,)
 
 
