@@ -175,23 +175,24 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     pooled_out = []
     cond_out = []
 
+
+    def pad_with_clip_tokens(tensor, target_length):
+        pad_token = clip.cond_stage_model.clip_l.special_tokens['pad']
+        tokens_to_pad = clip.tokenize(pad_token)
+        tokens_to_pad = tokens_to_pad.unsqueeze(0).expand(1, target_length, tokens_to_pad.shape[2])
+        tokens_to_pad = tokens_to_pad.to(tensor.device)
+        return torch.cat([tensor, tokens_to_pad], dim=1)
+
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
-
-        tokens = clip.tokenize(str(nxt_prompt_series[i]))
-        cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
-        if i < len(cur_prompt_series):
-            tokens = clip.tokenize(str(cur_prompt_series[i]))
-            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
-        else:
-            cond_to, pooled_to = torch.zeros_like(cond_from), torch.zeros_like(pooled_from)
 
         if i < len(nxt_prompt_series):
             tokens = clip.tokenize(str(nxt_prompt_series[i]))
             cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
         else:
             cond_from, pooled_from = torch.zeros_like(cond_to), torch.zeros_like(pooled_to)
+            pooled_from = pad_with_clip_tokens(pooled_from, cond_to.shape[1])
 
         interpolated_conditioning = addWeighted([[cond_to, {"pooled_output": pooled_to}]],
                                                 [[cond_from, {"pooled_output": pooled_from}]],
@@ -203,11 +204,11 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
         pooled_out.append(interpolated_pooled)
         cond_out.append(interpolated_cond)
 
-
     final_pooled_output = torch.cat(pooled_out, dim=0)
     final_conditioning = torch.cat(cond_out, dim=0)
 
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
+
 
 
 def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
