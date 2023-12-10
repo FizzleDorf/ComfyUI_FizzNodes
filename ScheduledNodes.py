@@ -71,6 +71,7 @@ class PromptSchedule:
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def animate(self, text, max_frames, print_output, current_frame, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
+        current_frame = current_frame % max_frames
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
@@ -201,6 +202,7 @@ class StringSchedule:
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def animate(self, text, max_frames, current_frame, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
+        current_frame = current_frame % max_frames
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
@@ -365,6 +367,7 @@ class PromptScheduleEncodeSDXL:
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, current_frame, print_output, pw_a, pw_b, pw_c, pw_d):
+        current_frame = current_frame % max_frames
         inputTextG = str("{" + text_g + "}")
         inputTextL = str("{" + text_l + "}")
         inputTextG = re.sub(r',\s*}', '}', inputTextG)
@@ -429,6 +432,7 @@ class PromptScheduleNodeFlowEnd:
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
     def animate(self, text, max_frames, print_output, current_frame, clip, pw_a = 0, pw_b = 0, pw_c = 0, pw_d = 0, pre_text = '', app_text = ''):
+        current_frame = current_frame % max_frames
         if text[-1] == ",":
             text = text[:-1]
         if text[0] == ",":
@@ -581,6 +585,7 @@ class ValueSchedule:
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
     
     def animate(self, text, max_frames, current_frame,):
+        current_frame = current_frame % max_frames
         t = get_inbetweens(parse_key_frames(text, max_frames), max_frames)
         cFrame = current_frame
         return (t[cFrame],int(t[cFrame]),)
