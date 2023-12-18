@@ -57,7 +57,8 @@ from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWav
 from .ScheduledNodes import (
     ValueSchedule, PromptSchedule, PromptScheduleNodeFlow, PromptScheduleNodeFlowEnd, PromptScheduleEncodeSDXL,
     StringSchedule, BatchPromptSchedule, BatchValueSchedule, BatchPromptScheduleEncodeSDXL, BatchStringSchedule,
-    BatchValueScheduleLatentInput, BatchPromptScheduleEncodeSDXLLatentInput, BatchPromptScheduleLatentInput
+    BatchValueScheduleLatentInput, BatchPromptScheduleEncodeSDXLLatentInput, BatchPromptScheduleLatentInput,
+    ImageBatchFromValueSchedule
     #, BatchPromptScheduleNodeFlowEnd #, BatchGLIGENSchedule
 )
 from .FrameNodes import FrameConcatenate, InitNodeFrame, NodeFrame, StringConcatenate
@@ -87,6 +88,7 @@ NODE_CLASS_MAPPINGS = {
     "BatchValueScheduleLatentInput": BatchValueScheduleLatentInput,
     "BatchPromptScheduleSDXLLatentInput":BatchPromptScheduleEncodeSDXLLatentInput,
     "BatchPromptScheduleLatentInput":BatchPromptScheduleLatentInput,
+    "ImageBatchFromValueSchedule":ImageBatchFromValueSchedule,
     #"BatchPromptScheduleNodeFlowEnd":BatchPromptScheduleNodeFlowEnd,
     #"BatchGLIGENSchedule": BatchGLIGENSchedule,
 
@@ -128,10 +130,10 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "BatchValueScheduleLatentInput": "Batch Value Schedule (Latent Input) 📅🅕🅝",
     "BatchPromptScheduleSDXLLatentInput": "Batch Prompt Schedule SDXL (Latent Input) 📅🅕🅝",
     "BatchPromptScheduleLatentInput": "Batch Prompt Schedule (Latent Input) 📅🅕🅝",
+    "ImageBatchFromValueSchedule":"Image Batch From Value Schedule 📅🅕🅝",
     "ConcatStringSingle": "Concat String (Single) 📅🅕🅝",
     "convertKeyframeKeysToBatchKeys":"Keyframe Keys To Batch Keys 📅🅕🅝",
     "SelectFrameNumber":"Select Frame Number 📅🅕🅝",
     "CalculateFrameOffset":"Calculate Frame Offset 📅🅕🅝",
-
 }
 print('\033[34mFizzleDorf Custom Nodes: \033[92mLoaded\033[0m')
