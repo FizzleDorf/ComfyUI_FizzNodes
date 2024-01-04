@@ -18,10 +18,10 @@ def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1=0
 
     for match in regex.finditer(prompt_parsed):
         matched_string = match.group(0)
-        parsed_string = matched_string.replace('t', f'{frame_idx}').replace("pw_a", f"prompt_weight_1").replace("pw_b",
-                                                                                                                f"prompt_weight_2").replace(
-            "pw_c", f"prompt_weight_3").replace("pw_d", f"prompt_weight_4").replace("max_f", f"{max_f}").replace('`',
-                                                                                                                 '')  # replace t, max_f and `` respectively
+        parsed_string = matched_string.replace('t', f'{frame_idx}').replace("pw_a", f"{prompt_weight_1}").replace("pw_b",
+                                                                                                                 f"{prompt_weight_2}").replace(
+            "pw_c", f"{prompt_weight_3}").replace("pw_d", f"{prompt_weight_4}").replace("max_f", f"{max_f}").replace('`',
+                                                                                                                     '')  # replace t, max_f and `` respectively
         parsed_value = numexpr.evaluate(parsed_string)
         prompt_parsed = prompt_parsed.replace(matched_string, str(parsed_value))
     return prompt_parsed.strip()
@@ -416,13 +416,13 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
 
     # Evaluate the current and next prompt's expressions
     for i in range(0, max_frames):
-        cur_prompt_series_G[i] = prepare_batch_prompt(cur_prompt_series_G[i], max_frames,
+        cur_prompt_series_G[i] = prepare_batch_prompt(cur_prompt_series_G[i], max_frames, i,
                                                              pw_a, pw_b, pw_c, pw_d)
-        nxt_prompt_series_G[i] = prepare_batch_prompt(nxt_prompt_series_G[i], max_frames,
+        nxt_prompt_series_G[i] = prepare_batch_prompt(nxt_prompt_series_G[i], max_frames, i,
                                                              pw_a, pw_b, pw_c, pw_d)
-        cur_prompt_series_L[i] = prepare_batch_prompt(cur_prompt_series_L[i], max_frames,
+        cur_prompt_series_L[i] = prepare_batch_prompt(cur_prompt_series_L[i], max_frames, i,
                                                              pw_a, pw_b, pw_c, pw_d)
-        nxt_prompt_series_L[i] = prepare_batch_prompt(nxt_prompt_series_L[i], max_frames,
+        nxt_prompt_series_L[i] = prepare_batch_prompt(nxt_prompt_series_L[i], max_frames, i,
                                                              pw_a, pw_b, pw_c, pw_d)
 
     current_conds = []
@@ -435,7 +435,7 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
 
     if Is_print == True:
         # Show the to/from prompts with evaluated expressions for transparency.
-        for i in range(len(cur_prompt_series)):
+        for i in range(0, max_frames):
             print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt G: ", cur_prompt_series_G[i],
                   "\n", "Current Prompt L: ", cur_prompt_series_L[i], "\n", "Next Prompt G: ", nxt_prompt_series_G[i],
                   "\n", "Next Prompt L : ", nxt_prompt_series_L[i],  "\n"), "\n", "Current weight: ", weight_series[i]
