@@ -100,6 +100,18 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
     current_key = 0
     next_key = 0
 
+    if type(prompt_weight_1) in {int, float}:
+        prompt_weight_1 = tuple([prompt_weight_1] * max_frames)
+
+    if type(prompt_weight_2) in {int, float}:
+        prompt_weight_2 = tuple([prompt_weight_2] * max_frames)
+
+    if type(prompt_weight_3) in {int, float}:
+        prompt_weight_3 = tuple([prompt_weight_3] * max_frames)
+
+    if type(prompt_weight_4) in {int, float}:
+        prompt_weight_4 = tuple([prompt_weight_4] * max_frames)
+
     # For every keyframe prompt except the last
     for i in range(0, len(sorted_prompts) - 1):
         # Get current and next keyframe
@@ -125,8 +137,6 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
             current_weight = 1 - next_weight
 
             # add the appropriate prompts and weights to their respective containers.
-            cur_prompt_series[f] = ''
-            nxt_prompt_series[f] = ''
             weight_series[f] = 0.0
             cur_prompt_series[f] = str(current_prompt)
             nxt_prompt_series[f] = str(next_prompt)
@@ -137,27 +147,13 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
         next_key = max_frames
         current_weight = 0.0
 
-
-    if type(prompt_weight_1) in {int, float}:
-        prompt_weight_1 = tuple([prompt_weight_1] * max_frames)
-
-    if type(prompt_weight_2) in {int, float}:
-        prompt_weight_2 = tuple([prompt_weight_2] * max_frames)
-
-    if type(prompt_weight_3) in {int, float}:
-        prompt_weight_3 = tuple([prompt_weight_3] * max_frames)
-
-    if type(prompt_weight_4) in {int, float}:
-        prompt_weight_4 = tuple([prompt_weight_4] * max_frames)
-
     index_offset = 0
     # Evaluate the current and next prompt's expressions
-
-    for i in range(start_frame,len(cur_prompt_series)):
-        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i],
-                                                    prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
-        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i],
-                                                    prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
+    for i in range(start_frame, max_frames-1):
+        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1,
+                                                    prompt_weight_2, prompt_weight_3, prompt_weight_4)
+        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1,
+                                                    prompt_weight_2, prompt_weight_3, prompt_weight_4)
         if Is_print == True:
             # Show the to/from prompts with evaluated expressions for transparency.
             print("\n", "Max Frames: ", max_frames, "\n", "frame index: ", (start_frame+i), "\n", "Current Prompt: ",
