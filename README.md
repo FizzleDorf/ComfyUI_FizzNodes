@@ -34,13 +34,11 @@ Some examples using the prompt and value schedulers using base comfyui.
 This example showcases making animations with only scheduled prompts. This method only uses 4.7 GB of memory and makes use of deterministic samplers (Euler in this case). 
 
 
-![output](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/5189b8c4-2d87-48ce-801d-2a3b37dc7752)
+![output](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/82f21ab2-209c-43d7-a202-67d99fd3c823)
 
 
-Drag and drop this image into ComfyUI to load the workflow or save the image and load it using the 
-![ComfyUI_00146_](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/addac087-1885-45de-9fea-4b9350908b57)
-
-
+Drag and drop the image in this link into ComfyUI to load the workflow or save the image and load it using the 
+[Txt2_Img_Example](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/8899f25e-fbc8-423c-bef2-e7c5a91fb7f4)
 
 
 
