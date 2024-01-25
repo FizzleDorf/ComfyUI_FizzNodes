@@ -27,6 +27,32 @@ Example | Instructions
 
 -----
 
+## Examples
+Some examples using the prompt and value schedulers using base comfyui.
+
+### Simple Animation Workflow
+This example showcases making animations with only scheduled prompts. This method only uses 4.7 GB of memory and makes use of deterministic samplers (Euler in this case). 
+
+
+![output](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/82f21ab2-209c-43d7-a202-67d99fd3c823)
+
+
+Drag and drop the image in this link into ComfyUI to load the workflow or save the image and load it using the load button.
+
+[Txt2_Img_Example](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/8899f25e-fbc8-423c-bef2-e7c5a91fb7f4)
+
+
+### Noisy Latent Comp Workflow
+This example showcases the [Noisy Laten Composition](https://comfyanonymous.github.io/ComfyUI_examples/noisy_latent_composition/) workflow. The value schedule node schedules the latent composite node's x position. You can also animate the subject while the composite node is being schedules as well!
+
+![output](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/6ffe1078-1869-4b7a-990f-902b7eafd67d)
+
+
+Drag and drop the image in this link into ComfyUI to load the workflow or save the image and load it using the load button.
+
+[Latent_Comp_Example](https://github.com/FizzleDorf/ComfyUI_FizzNodes/assets/46942135/410fbd99-d06e-489a-b6f5-3b747acd3740)
+
+
 ## Helpful tools
 
 Just a list of tools that you may find handy using these nodes.
@@ -35,8 +61,8 @@ Link | Description
 --- | --- 
 [Desmos Graphing Calculator](https://www.desmos.com/calculator) | online graphing calculator. Handy for visualizing expressions.
 [Keyframe String Generator](https://www.chigozie.co.uk/keyframe-string-generator/) | custom keyframe string generator that is compatable with the valueSchedule node.
-[Audio framesync](https://www.framesync.xyz/) | Audi sync wave functions. Exports keyframes for the valueSchedule node.
-
+[Audio framesync](https://www.framesync.xyz/) | Audio sync wave functions. Exports keyframes for the valueSchedule node.
+[SD-Parseq](https://github.com/rewbs/sd-parseq) | A powerful scheduling tool for audio sync and easy curve manupulation (my personal fave!)
 -----
 
 ## Acknowledgments
