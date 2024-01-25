@@ -578,32 +578,35 @@ class ValueSchedule:
         return {"required": {"text": ("STRING", {"multiline": True, "default":defaultValue}),
                              "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
                              "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0,}),# "forceInput": True}),
-                             }}
+                             "print_output": ("BOOLEAN", {"default": False})}}
     RETURN_TYPES = ("FLOAT", "INT")
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
     
-    def animate(self, text, max_frames, current_frame,):
+    def animate(self, text, max_frames, current_frame, print_output):
         current_frame = current_frame % max_frames
         t = get_inbetweens(parse_key_frames(text, max_frames), max_frames)
-        cFrame = current_frame
-        return (t[cFrame],int(t[cFrame]),)
+        if (print_output is True):
+            print("ValueSchedule: ",current_frame,"\n","current_frame: ",current_frame)
+        return (t[current_frame],int(t[current_frame]),)
 
 class BatchValueSchedule:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {"text": ("STRING", {"multiline": True, "default": defaultValue}),
-                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
-                             }}
+                            "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
+                            "print_output": ("BOOLEAN", {"default": False})}}
 
     RETURN_TYPES = ("FLOAT", "INT")
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, text, max_frames, ):
+    def animate(self, text, max_frames, print_output):
         t = batch_get_inbetweens(batch_parse_key_frames(text, max_frames), max_frames)
+        if print_output is True:
+            print("ValueSchedule: ", t)
         return (t, list(map(int,t)),)
 
 class BatchValueScheduleLatentInput:
@@ -611,17 +614,19 @@ class BatchValueScheduleLatentInput:
     def INPUT_TYPES(s):
         return {"required": {"text": ("STRING", {"multiline": True, "default": defaultValue}),
                              "num_latents": ("LATENT", ),
-                             }}
+                             "print_output": ("BOOLEAN", {"default": False})}}
 
     RETURN_TYPES = ("FLOAT", "INT", "LATENT", )
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, text, num_latents, ):
+    def animate(self, text, num_latents, print_output):
         num_elements = sum(tensor.size(0) for tensor in num_latents.values())
         max_frames = num_elements
         t = batch_get_inbetweens(batch_parse_key_frames(text, max_frames), max_frames)
+        if print_output is True:
+            print("ValueSchedule: ", t)
         return (t, list(map(int,t)), num_latents, )
 
 # Expects a Batch Value Schedule list input, it exports an image batch with images taken from an input image batch

@@ -171,7 +171,6 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     pooled_out = []
     cond_out = []
 
-
     def pad_with_clip_tokens(tensor, target_length):
         pad_token = clip.cond_stage_model.clip_l.special_tokens['pad']
         tokens_to_pad = clip.tokenize(pad_token)
