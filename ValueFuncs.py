@@ -6,8 +6,12 @@ import re
 import json
 
 from .ScheduleFuncs import check_is_number
+
+
 def sanitize_value(value):
-    return value.replace("'", "").replace('"', "").replace('(', "").replace(')', "")
+    # Remove single quotes, double quotes, and parentheses
+    value = value.replace("'", "").replace('"', "").replace('(', "").replace(')', "")
+    return value
 
 
 def get_inbetweens(key_frames, max_frames, integer=False, interp_method='Linear', is_single_string=False):
@@ -65,9 +69,9 @@ def batch_get_inbetweens(key_frames, max_frames, integer=False, interp_method='L
     value_is_number = False
     for i in range(0, max_frames):
         if i in key_frames:
-            value = key_frames[i]
+            value = str(key_frames[i])  # Convert to string to ensure it's treated as an expression
             value_is_number = check_is_number(sanitize_value(value))
-            if value_is_number:  # if it's only a number, leave the rest for the default interpolation
+            if value_is_number:
                 key_frame_series[i] = sanitize_value(value)
         if not value_is_number:
             t = i
