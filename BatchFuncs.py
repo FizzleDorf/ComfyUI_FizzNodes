@@ -180,6 +180,11 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
 
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
+
+        if len(tokens['l']) > 1:
+            print(f"Warning: input prompt: \n{str(cur_prompt_series[i])}\n was too long and will be truncated!!")
+            tokens['l'] = [tokens['l'][0]]
+
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
 
         if i < len(nxt_prompt_series):
