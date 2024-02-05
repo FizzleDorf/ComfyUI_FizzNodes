@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import re
 
-from .ScheduleFuncs import addWeighted, check_is_number, parse_weight, prepare_prompt, SDXLencode, reverseConcatenation
+from .ScheduleFuncs import *
 
 def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1=0, prompt_weight_2=0, prompt_weight_3=0,
                          prompt_weight_4=0):  # calculate expressions from the text input and return a string
@@ -150,10 +150,10 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
     index_offset = 0
     # Evaluate the current and next prompt's expressions
     for i in range(start_frame, len(cur_prompt_series)):
-        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, float(prompt_weight_1[0]),
-                                                    prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
-        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i],
-                                                    prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
+        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1,
+                                                    prompt_weight_2, prompt_weight_3, prompt_weight_4)
+        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1,
+                                                    prompt_weight_2, prompt_weight_3, prompt_weight_4)
         if Is_print == True:
             # Show the to/from prompts with evaluated expressions for transparency.
             print("\n", "Max Frames: ", max_frames, "\n", "frame index: ", (start_frame + i), "\n", "Current Prompt: ",
@@ -171,13 +171,6 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
 def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []
     cond_out = []
-
-    def pad_with_zeros(tensor, target_length):
-        current_length = tensor.shape[1]
-        if current_length < target_length:
-            padding = torch.zeros(tensor.shape[0], target_length - current_length, tensor.shape[2]).to(tensor.device)
-            tensor = torch.cat([tensor, padding], dim=1)
-        return tensor
 
     max_length = 0  # Variable to store the maximum length
 
