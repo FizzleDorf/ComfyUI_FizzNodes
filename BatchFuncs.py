@@ -194,8 +194,10 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output", pooled_from)
         print(f"interpolated_cond Shape: {interpolated_cond.shape}")
-        cond_out.append(pad_with_zeros(interpolated_cond, max_length))
-        pooled_out.append(pad_with_zeros(interpolated_pooled, max_length))
+        #cond_out.append(pad_with_zeros(interpolated_cond, max_length))
+        #pooled_out.append(pad_with_zeros(interpolated_pooled, max_length))
+        cond_out.append(interpolated_cond)
+        pooled_out.append(interpolated_pooled)
 
     final_pooled_output = torch.cat(pooled_out, dim=0)
     final_conditioning = torch.cat(cond_out, dim=0)
