@@ -12,31 +12,44 @@ import json
 
 #Addweighted function from Comfyui
 def addWeighted(conditioning_to, conditioning_from, conditioning_to_strength):
-        out = []
+    out = []
 
-        if len(conditioning_from) > 1:
-            print("Warning: ConditioningAverage conditioning_from contains more than 1 cond, only the first one will actually be applied to conditioning_to.")
+    if len(conditioning_from) > 1:
+        print("Warning: ConditioningAverage conditioning_from contains more than 1 cond, only the first one will actually be applied to conditioning_to.")
 
-        cond_from = conditioning_from[0][0]
-        pooled_output_from = conditioning_from[0][1].get("pooled_output", None)
+    cond_from = conditioning_from[0][0]
+    pooled_output_from = conditioning_from[0][1].get("pooled_output", None)
 
-        for i in range(len(conditioning_to)):
-            t1 = conditioning_to[i][0]
-            pooled_output_to = conditioning_to[i][1].get("pooled_output", pooled_output_from)
-            t0 = cond_from[:,:t1.shape[1]]
-            if t0.shape[1] < t1.shape[1]:
-                t0 = torch.cat([t0] + [torch.zeros((1, (t1.shape[1] - t0.shape[1]), t1.shape[2]))], dim=1)
+    for i in range(len(conditioning_to)):
+        t1 = conditioning_to[i][0]
+        pooled_output_to = conditioning_to[i][1].get("pooled_output", pooled_output_from)
 
-            tw = torch.mul(t1, conditioning_to_strength) + torch.mul(t0, (1.0 - conditioning_to_strength))
-            t_to = conditioning_to[i][1].copy()
-            if pooled_output_from is not None and pooled_output_to is not None:
-                t_to["pooled_output"] = torch.mul(pooled_output_to, conditioning_to_strength) + torch.mul(pooled_output_from, (1.0 - conditioning_to_strength))
-            elif pooled_output_from is not None:
-                t_to["pooled_output"] = pooled_output_from
+        max_size = max(t1.shape[1], cond_from.shape[1])
+        t0 = pad_with_zeros(cond_from, max_size)
+        t1 = pad_with_zeros(t1, max_size)
 
-            n = [tw, t_to]
-            out.append(n)
-        return out
+        tw = torch.mul(t1, conditioning_to_strength) + torch.mul(t0, (1.0 - conditioning_to_strength))
+        t_to = conditioning_to[i][1].copy()
+
+        if pooled_output_from is not None and pooled_output_to is not None:
+            # Pad pooled outputs if available
+            pooled_output_to = pad_with_zeros(pooled_output_to, max_size)
+            pooled_output_from = pad_with_zeros(pooled_output_from, max_size)
+            t_to["pooled_output"] = torch.mul(pooled_output_to, conditioning_to_strength) + torch.mul(pooled_output_from, (1.0 - conditioning_to_strength))
+        elif pooled_output_from is not None:
+            t_to["pooled_output"] = pooled_output_from
+
+        n = [tw, t_to]
+        out.append(n)
+
+    return out
+
+def pad_with_zeros(tensor, target_length):
+    current_length = tensor.shape[1]
+    if current_length < target_length:
+        padding = torch.zeros(tensor.shape[0], target_length - current_length, tensor.shape[2]).to(tensor.device)
+        tensor = torch.cat([tensor, padding], dim=1)
+    return tensor
 
 def reverseConcatenation(final_conditioning, final_pooled_output, max_frames):
     # Split the final_conditioning and final_pooled_output tensors into their original components
