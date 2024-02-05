@@ -172,8 +172,6 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     pooled_out = []
     cond_out = []
 
-    max_length = 0  # Variable to store the maximum length
-
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
@@ -183,9 +181,6 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
             cond_from, pooled_from = clip.encode_from_tokens(tokens, return_pooled=True)
         else:
             cond_from, pooled_from = torch.zeros_like(cond_to), torch.zeros_like(pooled_to)
-        print(f"CondTo Shape: {cond_to.shape}")
-        print(f"CondFrom Shape: {cond_from.shape}")
-        max_length = max(max_length, max(cond_to.shape[1], pooled_to.shape[1]))
 
         interpolated_conditioning = addWeighted([[cond_to, {"pooled_output": pooled_to}]],
                                                 [[cond_from, {"pooled_output": pooled_from}]],
@@ -193,15 +188,12 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
 
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output", pooled_from)
-        print(f"interpolated_cond Shape: {interpolated_cond.shape}")
-        #cond_out.append(pad_with_zeros(interpolated_cond, max_length))
-        #pooled_out.append(pad_with_zeros(interpolated_pooled, max_length))
+
         cond_out.append(interpolated_cond)
         pooled_out.append(interpolated_pooled)
 
     final_pooled_output = torch.cat(pooled_out, dim=0)
     final_conditioning = torch.cat(cond_out, dim=0)
-    print(f"final_pooled_output Shape: {final_pooled_output.shape}")
 
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
 
