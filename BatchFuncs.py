@@ -19,9 +19,9 @@ def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1=0
     for match in regex.finditer(prompt_parsed):
         matched_string = match.group(0)
         parsed_string = matched_string.replace('t', f'{frame_idx}').replace("pw_a", f"{prompt_weight_1}").replace("pw_b",
-                                                                                                                 f"{prompt_weight_2}").replace(
-            "pw_c", f"{prompt_weight_3}").replace("pw_d", f"{prompt_weight_4}").replace("max_f", f"{max_f}").replace('`',
-                                                                                                                     '')  # replace t, max_f and `` respectively
+                                                    f"{prompt_weight_2}").replace("pw_c", f"{prompt_weight_3}").replace("pw_d",
+                                                    f"{prompt_weight_4}").replace("max_f",
+                                                    f"{max_f}").replace('`', '')  # replace t, max_f and `` respectively
         parsed_value = numexpr.evaluate(parsed_string)
         prompt_parsed = prompt_parsed.replace(matched_string, str(parsed_value))
     return prompt_parsed.strip()
@@ -150,10 +150,10 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
     index_offset = 0
     # Evaluate the current and next prompt's expressions
     for i in range(start_frame, len(cur_prompt_series)):
-        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1,
-                                                    prompt_weight_2, prompt_weight_3, prompt_weight_4)
-        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1,
-                                                    prompt_weight_2, prompt_weight_3, prompt_weight_4)
+        cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1.iloc[i],
+                                                    prompt_weight_2.iloc[i], prompt_weight_3.iloc[i], prompt_weight_4.iloc[i])
+        nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1.iloc[i],
+                                                    prompt_weight_2.iloc[i], prompt_weight_3.iloc[i], prompt_weight_4.iloc[i])
         if Is_print == True:
             # Show the to/from prompts with evaluated expressions for transparency.
             print("\n", "Max Frames: ", max_frames, "\n", "frame index: ", (start_frame + i), "\n", "Current Prompt: ",
