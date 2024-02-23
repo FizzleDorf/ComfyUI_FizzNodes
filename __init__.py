@@ -56,7 +56,7 @@ def is_installed(package, package_overwrite=None):
 from .WaveNodes import Lerp, SinWave, InvSinWave, CosWave, InvCosWave, SquareWave, SawtoothWave, TriangleWave, AbsCosWave, AbsSinWave
 from .ScheduledNodes import (
     ValueSchedule, PromptSchedule, PromptScheduleNodeFlow, PromptScheduleNodeFlowEnd, PromptScheduleEncodeSDXL,
-    StringSchedule, BatchPromptSchedule, BatchValueSchedule, BatchPromptScheduleEncodeSDXL, BatchStringSchedule,
+    StringSchedule, BatchPromptSchedule, BatchPromptScheduleAdvanced, BatchValueSchedule, BatchPromptScheduleEncodeSDXL, BatchStringSchedule,
     BatchValueScheduleLatentInput, BatchPromptScheduleEncodeSDXLLatentInput, BatchPromptScheduleLatentInput,
     ImageBatchFromValueSchedule
     #, BatchPromptScheduleNodeFlowEnd #, BatchGLIGENSchedule
