@@ -174,6 +174,13 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     pooled_out = []
     cond_out = []
 
+    max_size = 0
+    if max_size is 0:
+        for i in range(len(cur_prompt_series)):
+            tokens = clip.tokenize(str(cur_prompt_series[i]))
+            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+            tensor_size = cond_to.shape[1]  # Assuming dimension 1 represents the size you're interested in
+            max_size = max(max_size, tensor_size)
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
@@ -186,7 +193,7 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
 
         interpolated_conditioning = addWeighted([[cond_to, {"pooled_output": pooled_to}]],
                                                 [[cond_from, {"pooled_output": pooled_from}]],
-                                                weight_series[i])
+                                                weight_series[i],max_size)
 
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output", pooled_from)
