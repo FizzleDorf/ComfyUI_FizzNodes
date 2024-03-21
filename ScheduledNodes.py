@@ -57,7 +57,7 @@ class PromptSchedule:
             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
             "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0,}),
             "print_output":("BOOLEAN", {"default": False}),},# "forceInput": True}),},
-                "optional": {"pre_text": ("STRING", {"multiline": True,}),# "forceInput": True}),
+            "optional": {"pre_text": ("STRING", {"multiline": True,}),# "forceInput": True}),
             "app_text": ("STRING", {"multiline": True,}),# "forceInput": True}),
             "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
             "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
@@ -182,7 +182,8 @@ class StringSchedule:
     def INPUT_TYPES(s):
         return {"required": {"text": ("STRING", {"multiline": True, "default": defaultPrompt}),
                              "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
-                             "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0, })},
+                             "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0, }),
+                             "print_output":("BOOLEAN", {"default": False}),},
                 # "forceInput": True}),},
                 "optional": {"pre_text": ("STRING", {"multiline": True, }),  # "forceInput": True}),
                              "app_text": ("STRING", {"multiline": True, }),  # "forceInput": True}),
@@ -196,45 +197,35 @@ class StringSchedule:
                              # "forceInput": True }),
                              }}
 
-    RETURN_TYPES = ("STRING",)
+    RETURN_TYPES = ("STRING", "STRING",)
+    RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
-    def animate(self, text, max_frames, current_frame, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
+    def animate(self, text, max_frames, current_frame, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text='', print_output = False ):
         current_frame = current_frame % max_frames
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
         animation_prompts = json.loads(inputText.strip())
-        cur_prompt = interpolate_string(animation_prompts, max_frames, current_frame, pre_text,
-                                                             app_text, pw_a, pw_b, pw_c, pw_d)
-        #c = PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip, )
-        return (cur_prompt,)
+        start_frame = 0
+        pos, neg = batch_split_weighted_subprompts(animation_prompts, pre_text, app_text)
 
-class PromptScheduleSDXLRefiner:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {"required": {
-            "ascore": ("FLOAT", {"default": 6.0, "min": 0.0, "max": 1000.0, "step": 0.01}),
-            "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
-            "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
-            "text": ("STRING", {"multiline": True, "default":defaultPrompt}), "clip": ("CLIP", ),
-            }}
-    RETURN_TYPES = ("CONDITIONING",)
-    FUNCTION = "encode"
+        pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_series(pos, max_frames, 0, pre_text,
+                                                                           app_text, pw_a,
+                                                                           pw_b, pw_c, pw_d, print_output)
 
-    CATEGORY = "advanced/conditioning"
-
-    def encode(self, clip, ascore, width, height, text):
-        tokens = clip.tokenize(text)
-        cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
-        return ([[cond, {"pooled_output": pooled, "aesthetic_score": ascore, "width": width,"height": height}]], )
+        neg_cur_prompt, neg_nxt_prompt, weight = interpolate_prompt_series(neg, max_frames, start_frame, pre_text,
+                                                                           app_text, pw_a,
+                                                                           pw_b, pw_c, pw_d, print_output)
+        return(pos_cur_prompt[current_frame], neg_cur_prompt[current_frame], )
 
 class BatchStringSchedule:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {"text": ("STRING", {"multiline": True, "default": defaultPrompt}),
-                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),},
+                             "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
+                             "print_output": ("BOOLEAN", {"default": False}),},
                 # "forceInput": True}),},
                 "optional": {"pre_text": ("STRING", {"multiline": True, }),  # "forceInput": True}),
                              "app_text": ("STRING", {"multiline": True, }),  # "forceInput": True}),
@@ -248,19 +239,27 @@ class BatchStringSchedule:
                              # "forceInput": True }),
                              }}
 
-    RETURN_TYPES = ("STRING",)
+    RETURN_TYPES = ("STRING", "STRING",)
+    RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, text, max_frames, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''):
+    def animate(self, text, max_frames, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text='', print_output=False):
         inputText = str("{" + text + "}")
         inputText = re.sub(r',\s*}', '}', inputText)
         start_frame = 0
         animation_prompts = json.loads(inputText.strip())
-        cur_prompt_series, nxt_prompt_series, weight_series = interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_text,
-                                                             app_text, pw_a, pw_b, pw_c, pw_d)
-        return (cur_prompt_series,)
+        pos, neg = batch_split_weighted_subprompts(animation_prompts, pre_text, app_text)
+
+        pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_series(pos, max_frames, start_frame, pre_text,
+                                                                           app_text, pw_a,
+                                                                           pw_b, pw_c, pw_d, print_output)
+
+        neg_cur_prompt, neg_nxt_prompt, weight = interpolate_prompt_series(neg, max_frames, start_frame, pre_text,
+                                                                           app_text, pw_a,
+                                                                           pw_b, pw_c, pw_d, print_output)
+        return (pos_cur_prompt, neg_cur_prompt, )
 
 class BatchPromptScheduleEncodeSDXL:
     @classmethod
