@@ -102,16 +102,16 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
     current_key = 0
     next_key = 0
 
-    if type(prompt_weight_1) in {int, float}:
+    if type(prompt_weight_1) in {int, float, np.float64}:
        prompt_weight_1 = tuple([prompt_weight_1] * max_frames)
 
-    if type(prompt_weight_2) in {int, float}:
+    if type(prompt_weight_2) in {int, float, np.float64}:
        prompt_weight_2 = tuple([prompt_weight_2] * max_frames)
 
-    if type(prompt_weight_3) in {int, float}:
+    if type(prompt_weight_3) in {int, float, np.float64}:
        prompt_weight_3 = tuple([prompt_weight_3] * max_frames)
 
-    if type(prompt_weight_4) in {int, float}:
+    if type(prompt_weight_4) in {int, float, np.float64}:
        prompt_weight_4 = tuple([prompt_weight_4] * max_frames)
 
     # For every keyframe prompt except the last
