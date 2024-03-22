@@ -236,7 +236,7 @@ def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series,
 
     return cond_out, pooled_out
 
-def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series, clip):
+def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series):
     pooled_out = []
     cond_out = []
 
@@ -439,4 +439,4 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
                   "\n", "Current Prompt L: ", cur_prompt_series_L[i], "\n", "Next Prompt G: ", nxt_prompt_series_G[i],
                   "\n", "Next Prompt L : ", nxt_prompt_series_L[i],  "\n"), "\n", "Current weight: ", weight_series[i]
 
-    return BatchPoolAnimConditioningSDXL(current_conds, next_conds, weight_series, clip)
+    return current_conds, next_conds, weight_series

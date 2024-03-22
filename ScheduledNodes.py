@@ -9,12 +9,9 @@ import re
 import json
 
 
-from .ScheduleFuncs import (
-    check_is_number, interpolate_prompts_SDXL, PoolAnimConditioning,
-    interpolate_string, addWeighted, reverseConcatenation, split_weighted_subprompts
-)
-from .BatchFuncs import interpolate_prompt_series, BatchPoolAnimConditioning, BatchInterpolatePromptsSDXL, batch_split_weighted_subprompts #, BatchGLIGENConditioning
-from .ValueFuncs import batch_get_inbetweens, batch_parse_key_frames, parse_key_frames, get_inbetweens, sanitize_value
+from .ScheduleFuncs import *
+from .BatchFuncs import * #, BatchGLIGENConditioning
+from .ValueFuncs import *
 #Max resolution value for Gligen area calculation.
 MAX_RESOLUTION=8192
 
@@ -296,7 +293,12 @@ class BatchPromptScheduleEncodeSDXL:
         inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
-        return (BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output,),)
+        c, n, w = BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip, app_text_G,
+                                              app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height,
+                                              crop_w, crop_h, target_width, target_height, print_output, )
+        pc = BatchPoolAnimConditioningSDXL(c,n,w)
+
+        return (pc,)
 
 class BatchPromptScheduleEncodeSDXLLatentInput:
     @classmethod
@@ -334,7 +336,12 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
         inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
-        return (BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output, ), num_latents, )
+        c, n, w = BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip, app_text_G,
+                                              app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height,
+                                              crop_w, crop_h, target_width, target_height, print_output, )
+        pc = BatchPoolAnimConditioningSDXL(c, n, w)
+
+        return (pc,)
 
 class PromptScheduleEncodeSDXL:
     @classmethod
@@ -373,7 +380,9 @@ class PromptScheduleEncodeSDXL:
         inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
-        return (interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames, current_frame, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output,),)
+        c,n,w = BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output,)
+        pc = addWeighted(c[current_frame], n[current_frame], w[current_frame])
+        return (pc,)
 
 # This node schedules the prompt using separate nodes as the keyframes.
 # The values in the prompt are evaluated in NodeFlowEnd.
