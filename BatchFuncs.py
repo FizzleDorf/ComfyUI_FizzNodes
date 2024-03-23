@@ -292,13 +292,19 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
     # simple array for strength values
     weight_series = [np.nan] * max_frames
 
-    # in case there is only one keyed promt, set all prompts to that prompt
-    if len(sorted_prompts_G) - 1 == 0:
-        for i in range(0, len(cur_prompt_series_G) - 1):
-            current_prompt_G = sorted_prompts_G[0][1]
-            cur_prompt_series_G[i] = str(pre_text_G) + " " + str(current_prompt_G) + " " + str(app_text_G)
-            nxt_prompt_series_G[i] = str(pre_text_G) + " " + str(current_prompt_G) + " " + str(app_text_G)
+    def constructPrompt(sorted_prompts, cur_prompt, nxt_prompt, pre_text, app_text):
+        if len(sorted_prompts) - 1 == 0:
+            for i in range(0, len(sorted_prompts) - 1):
+                current_prompt = sorted_prompts[0][1]
+                cur_prompt[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
+                nxt_prompt[i] = str(pre_text) + " " + str(current_prompt) + " " + str(app_text)
+        return cur_prompt, nxt_prompt
 
+    # in case there is only one keyed promt, set all prompts to that prompt
+    cur_prompt_series_G, nxt_prompt_series_G = constructPrompt(sorted_prompts_G, cur_prompt_series_G, nxt_prompt_series_G, pre_text_G, app_text_G)
+    cur_prompt_series_L, nxt_prompt_series_L = constructPrompt(sorted_prompts_G, cur_prompt_series_G,
+                                                               nxt_prompt_series_G, pre_text_G, app_text_G)
+    print("Debug: ", cur_prompt_series_G, nxt_prompt_series_G)
     if len(sorted_prompts_L) - 1 == 0:
         for i in range(0, len(cur_prompt_series_L) - 1):
             current_prompt_L = sorted_prompts_L[0][1]

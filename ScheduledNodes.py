@@ -281,7 +281,8 @@ class BatchPromptScheduleEncodeSDXL:
             "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
              }}
-    RETURN_TYPES = ("CONDITIONING",)
+    RETURN_TYPES = ("CONDITIONING", "CONDITIONING",)
+    RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
@@ -293,12 +294,19 @@ class BatchPromptScheduleEncodeSDXL:
         inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
-        c, n, w = BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip, app_text_G,
-                                              app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height,
-                                              crop_w, crop_h, target_width, target_height, print_output, )
-        pc = BatchPoolAnimConditioningSDXL(c,n,w)
+        posG, negG = batch_split_weighted_subprompts(animation_promptsG, pre_text_G, app_text_G)
+        posL, negL = batch_split_weighted_subprompts(animation_promptsL, pre_text_L, app_text_L)
+        pc, pn, pw = BatchInterpolatePromptsSDXL(posG, posL, max_frames, clip, app_text_G, app_text_L, pre_text_G,
+                                                 pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h,
+                                                 target_width, target_height, print_output, )
+        p = BatchPoolAnimConditioningSDXL(pc, pn, pw)
 
-        return (pc,)
+        nc, nn, nw = BatchInterpolatePromptsSDXL(negG, negL, max_frames, clip, app_text_G,
+                                                 app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width,
+                                                 height, crop_w, crop_h, target_width, target_height, print_output, )
+        n = BatchPoolAnimConditioningSDXL(nc, nn, nw)
+
+        return (p,n,)
 
 class BatchPromptScheduleEncodeSDXLLatentInput:
     @classmethod
@@ -323,7 +331,8 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
             "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
              }}
-    RETURN_TYPES = ("CONDITIONING", "LATENT",)
+    RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "LATENT",)
+    RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
@@ -336,12 +345,19 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
         inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
-        c, n, w = BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip, app_text_G,
-                                              app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height,
-                                              crop_w, crop_h, target_width, target_height, print_output, )
-        pc = BatchPoolAnimConditioningSDXL(c, n, w)
+        posG, negG = batch_split_weighted_subprompts(animation_promptsG, pre_text_G, app_text_G)
+        posL, negL = batch_split_weighted_subprompts(animation_promptsL, pre_text_L, app_text_L)
+        pc, pn, pw = BatchInterpolatePromptsSDXL(posG, posL, max_frames, clip, app_text_G, app_text_L, pre_text_G,
+                                                 pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h,
+                                                 target_width, target_height, print_output, )
+        p = BatchPoolAnimConditioningSDXL(pc, pn, pw)
 
-        return (pc,)
+        nc, nn, nw = BatchInterpolatePromptsSDXL(negG, negL, max_frames, clip, app_text_G,
+                                                 app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width,
+                                                 height, crop_w, crop_h, target_width, target_height, print_output, )
+        n = BatchPoolAnimConditioningSDXL(nc, nn, nw)
+
+        return (p,n,num_latents,)
 
 class PromptScheduleEncodeSDXL:
     @classmethod
@@ -367,7 +383,8 @@ class PromptScheduleEncodeSDXL:
             "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
             "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1,}), #"forceInput": True }),
              }}
-    RETURN_TYPES = ("CONDITIONING",)
+    RETURN_TYPES = ("CONDITIONING","CONDITIONING",)
+    RETURN_NAMES = ("POS", "NEG",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
@@ -380,9 +397,18 @@ class PromptScheduleEncodeSDXL:
         inputTextL = re.sub(r',\s*}', '}', inputTextL)
         animation_promptsG = json.loads(inputTextG.strip())
         animation_promptsL = json.loads(inputTextL.strip())
-        c,n,w = BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output,)
-        pc = addWeighted(c[current_frame], n[current_frame], w[current_frame])
-        return (pc,)
+        posG, negG = batch_split_weighted_subprompts(animation_promptsG, pre_text_G, app_text_G)
+        posL, negL = batch_split_weighted_subprompts(animation_promptsL, pre_text_L, app_text_L)
+
+        pc,pn,pw = BatchInterpolatePromptsSDXL(posG, posL, max_frames, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output,)
+        p = addWeighted(pc[current_frame], pn[current_frame], pw[current_frame])
+
+        nc, nn, nw = BatchInterpolatePromptsSDXL(negG, negL, max_frames, clip, app_text_G,
+                                                 app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width,
+                                                 height, crop_w, crop_h, target_width, target_height, print_output, )
+        n = addWeighted(nc[current_frame], nn[current_frame], nw[current_frame])
+
+        return (p,n,)
 
 # This node schedules the prompt using separate nodes as the keyframes.
 # The values in the prompt are evaluated in NodeFlowEnd.
