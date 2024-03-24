@@ -8,10 +8,10 @@ import pandas as pd
 import re
 import json
 
-
 from .ScheduleFuncs import *
-from .BatchFuncs import * #, BatchGLIGENConditioning
+from .BatchFuncs import *
 from .ValueFuncs import *
+
 #Max resolution value for Gligen area calculation.
 MAX_RESOLUTION=8192
 
@@ -664,22 +664,69 @@ class BatchValueScheduleLatentInput:
         return (t, list(map(int,t)), num_latents, )
 
 # Expects a Batch Value Schedule list input, it exports an image batch with images taken from an input image batch
-class ImageBatchFromValueSchedule:
+class ImagesFromBatchSchedule:
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
                 "images": ("IMAGE",),
-                "values": ("FLOAT", { "default": 1.0, "min": -1.0, "max": 1.0, "label": "values" }),
+                "text": ("STRING", {"multiline": True, "default":defaultPrompt}),
+                "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0, }),
+                "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
+                "print_output": ("BOOLEAN", {"default": False}),
             }
         }
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "animate"
-    CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
+    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
-    def animate(self, images, values):
-        values = [values] * n if isinstance(values, float) else values
-        min_value, max_value = min(values), max(values)
-        i = [(x - min_value) / (max_value - min_value) * (images.shape[0] - 1) for x in values]
-        return (images[i], )
+    def animate(self, images, text, current_frame, max_frames, print_output):
+        inputText = str("{" + text + "}")
+        inputText = re.sub(r',\s*}', '}', inputText)
+        start_frame = 0
+        animation_prompts = json.loads(inputText.strip())
+        pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_series(animation_prompts, max_frames, 0, "",
+                                                                           "", 0,
+                                                                           0, 0, 0, print_output)
+        selImages = selectImages(images,pos_cur_prompt[current_frame])
+        return selImages
+
+
+def selectImages(images: torch.Tensor, selected_indexes: str):
+    shape = images.shape
+    len_first_dim = shape[0]
+
+    selected_index: list[int] = []
+    total_indexes: list[int] = list(range(len_first_dim))
+    for s in selected_indexes.strip().split(','):
+        try:
+            if ":" in s:
+                _li = s.strip().split(':', maxsplit=1)
+                _start = _li[0]
+                _end = _li[1]
+                if _start and _end:
+                    selected_index.extend(
+                        total_indexes[int(_start) - 1:int(_end) - 1]
+                    )
+                elif _start:
+                    selected_index.extend(
+                        total_indexes[int(_start) - 1:]
+                    )
+                elif _end:
+                    selected_index.extend(
+                        total_indexes[:int(_end) - 1]
+                    )
+            else:
+                x: int = int(s.strip()) - 1
+                if x < len_first_dim:
+                    selected_index.append(x)
+        except:
+            pass
+
+    if selected_index:
+        print(f"ImageSelector: selected: {len(selected_index)} images")
+        return (images[selected_index], )
+
+    print(f"ImageSelector: selected no images, passthrough")
+    return images
