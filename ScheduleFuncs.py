@@ -23,7 +23,7 @@ def addWeighted(conditioning_to, conditioning_from, conditioning_to_strength, ma
     for i in range(len(conditioning_to)):
         t1 = conditioning_to[i][0]
         pooled_output_to = conditioning_to[i][1].get("pooled_output", pooled_output_from)
-        if max_size is 0:
+        if max_size == 0:
             max_size = max(t1.shape[1], cond_from.shape[1])
         t0 = pad_with_zeros(cond_from, max_size)
         t1 = pad_with_zeros(t1, max_size)

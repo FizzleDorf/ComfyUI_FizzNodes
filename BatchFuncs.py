@@ -175,7 +175,7 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     cond_out = []
 
     max_size = 0
-    if max_size is 0:
+    if max_size == 0:
         for i in range(len(cur_prompt_series)):
             tokens = clip.tokenize(str(cur_prompt_series[i]))
             cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
