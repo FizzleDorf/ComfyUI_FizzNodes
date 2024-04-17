@@ -150,10 +150,10 @@ class BatchPromptSchedule:
         return batch_prompt_schedule(settings, clip)
 
 
-#This node parses the user's formatted prompt,
-#sequences the current prompt,next prompt, and
-#conditioning strength, evaluates expressions in
-#the prompts, and then returns a batch of
+# This node parses the user's formatted prompt,
+# sequences the current prompt,next prompt, and
+# conditioning strength, evaluates expressions in
+# the prompts, and then returns a batch of
 # conditionings with the schedule applied.
 # This alternate batch node takes a latent as
 # an input instead of max_frames

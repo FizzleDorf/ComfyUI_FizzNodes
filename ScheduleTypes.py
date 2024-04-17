@@ -57,7 +57,7 @@ def batch_prompt_schedule(settings:ScheduleSettings,clip):
     n = BatchPoolAnimConditioning(neg_cur_prompt, neg_nxt_prompt, weight, clip, )
 
     # return positive and negative conditioning as well as the current and next prompts for each
-    return (p, n, latents,)
+    return (p, n,)
 
 def batch_prompt_schedule_latentInput(settings:ScheduleSettings,clip, latents):
     # Clear whitespace and newlines from json
