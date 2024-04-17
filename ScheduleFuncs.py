@@ -10,6 +10,58 @@ import json
 
 #functions used by PromptSchedule nodes
 
+#This Settings class is mainly used to reduce clutter and keep things relatively
+#organized. It is multi-purpose for both regular clip encoding and SDXL encoding
+#The value schedule doesn't have as many arguments so I didn't bother doing the
+#same for that.
+class ScheduleSettings:
+    def __init__(
+            self,
+            text_G: str,
+            pre_text_G: str,
+            app_text_G: str,
+            text_L: str,
+            pre_text_L: str,
+            app_text_L: str,
+            max_frames: int,
+            current_frame: int,
+            print_output: bool,
+            pw_a: float,
+            pw_b: float,
+            pw_c: float,
+            pw_d: float,
+            start_frame: int,
+            width: int,
+            height: int,
+            crop_w: int,
+            crop_h: int,
+            target_width: int,
+            target_height: int,
+    ):
+        self.text_G=text_G
+        self.pre_text_G=pre_text_G
+        self.app_text_G=app_text_G
+        self.text_L=text_L
+        self.pre_text_L=pre_text_L
+        self.app_text_L=app_text_L
+        self.max_frames=max_frames
+        self.current_frame=current_frame
+        self.print_output=print_output
+        self.pw_a=pw_a
+        self.pw_b=pw_b
+        self.pw_c=pw_c
+        self.pw_d=pw_d
+        self.start_frame=start_frame
+        self.width=width
+        self.height=height
+        self.crop_w=crop_w
+        self.crop_h=crop_h
+        self.target_width=target_width
+        self.target_height=target_height
+
+    def set_sync_option(self, sync_option: bool):
+        self.sync_context_to_pe = sync_option
+
 #Addweighted function from Comfyui
 def addWeighted(conditioning_to, conditioning_from, conditioning_to_strength, max_size = 0):
     out = []
@@ -44,19 +96,18 @@ def addWeighted(conditioning_to, conditioning_from, conditioning_to_strength, ma
 
     return out
 
+def process_input_text(text: str) -> dict:
+    input_text = "{" + text + "}"
+    input_text = re.sub(r',\s*}', '}', input_text)
+    animation_prompts = json.loads(input_text.strip())
+    return animation_prompts
+
 def pad_with_zeros(tensor, target_length):
     current_length = tensor.shape[1]
     if current_length < target_length:
         padding = torch.zeros(tensor.shape[0], target_length - current_length, tensor.shape[2]).to(tensor.device)
         tensor = torch.cat([tensor, padding], dim=1)
     return tensor
-
-def reverseConcatenation(final_conditioning, final_pooled_output, max_frames):
-    # Split the final_conditioning and final_pooled_output tensors into their original components
-    cond_out = torch.split(final_conditioning, max_frames)
-    pooled_out = torch.split(final_pooled_output, max_frames)
-
-    return cond_out, pooled_out
 
 def check_is_number(value):
     float_pattern = r'^(?=.)([+-]?([0-9]*)(\.([0-9]+))?)$'

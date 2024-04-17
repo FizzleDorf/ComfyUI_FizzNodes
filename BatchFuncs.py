@@ -9,8 +9,9 @@ import re
 
 from .ScheduleFuncs import *
 
+# calculates numexpr expressions from the text input and return a string
 def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1=0, prompt_weight_2=0, prompt_weight_3=0,
-                         prompt_weight_4=0):  # calculate expressions from the text input and return a string
+                         prompt_weight_4=0):
     max_f = max_frames - 1
     pattern = r'`.*?`'  # set so the expression will be read between two backticks (``)
     regex = re.compile(pattern)
@@ -26,6 +27,28 @@ def prepare_batch_prompt(prompt_series, max_frames, frame_idx, prompt_weight_1=0
         prompt_parsed = prompt_parsed.replace(matched_string, str(parsed_value))
     return prompt_parsed.strip()
 
+def prepare_batch_promptA(prompt, settings:ScheduleSettings, index):
+    max_f = settings.max_frames - 1
+    pattern = r'`.*?`'  # set so the expression will be read between two backticks (``)
+    regex = re.compile(pattern)
+    prompt_parsed = str(prompt)
+
+    for match in regex.finditer(prompt_parsed):
+        matched_string = match.group(0)
+        parsed_string = matched_string.replace(
+            't',
+            f'{index}').replace("pw_a",
+            f"{settings.pw_a[index]}").replace("pw_b",
+            f"{settings.pw_b[index]}").replace("pw_c",
+            f"{settings.pw_c[index]}").replace("pw_d",
+            f"{settings.pw_d[index]}").replace("max_f",
+            f"{max_f}").replace('`', '')  # replace t, max_f and `` respectively
+        parsed_value = numexpr.evaluate(parsed_string)
+        prompt_parsed = prompt_parsed.replace(matched_string, str(parsed_value))
+    return prompt_parsed.strip()
+
+#splits the prompt into positive and negative outputs
+#denoted with --neg for where the split should be.
 def batch_split_weighted_subprompts(text, pre_text, app_text):
     pos = {}
     neg = {}
@@ -61,6 +84,115 @@ def batch_split_weighted_subprompts(text, pre_text, app_text):
         if neg[frame].endswith('0'):
             neg[frame] = neg[frame][:-1]
     return pos, neg
+
+#converts the prompt weight variables to tuples. if it is an int variable,
+#set all frames to have the same value
+def convert_pw_to_tuples(settings):
+    if isinstance(settings.pw_a, (int, float, np.float64)):
+        settings.pw_a = tuple([settings.pw_a] * settings.max_frames)
+
+    if isinstance(settings.pw_b, (int, float, np.float64)):
+        settings.pw_b = tuple([settings.pw_b] * settings.max_frames)
+
+    if isinstance(settings.pw_c, (int, float, np.float64)):
+        settings.pw_c = tuple([settings.pw_c] * settings.max_frames)
+
+    if isinstance(settings.pw_d, (int, float, np.float64)):
+        settings.pw_d = tuple([settings.pw_d] * settings.max_frames)
+
+def interpolate_prompt_seriesA(animation_prompts, settings:ScheduleSettings):
+
+    max_f = settings.max_frames  # needed for numexpr even though it doesn't look like it's in use.
+    parsed_animation_prompts = {}
+
+
+    for key, value in animation_prompts.items():
+        if check_is_number(key):  # default case 0:(1 + t %5), 30:(5-t%2)
+            parsed_animation_prompts[key] = value
+        else:  # math on the left hand side case 0:(1 + t %5), maxKeyframes/2:(5-t%2)
+            parsed_animation_prompts[int(numexpr.evaluate(key))] = value
+
+    sorted_prompts = sorted(parsed_animation_prompts.items(), key=lambda item: int(item[0]))
+
+    # Automatically set the first keyframe to 0 if it's missing
+    if sorted_prompts[0][0] != "0":
+        sorted_prompts.insert(0, ("0", sorted_prompts[0][1]))
+
+    # Automatically set the last keyframe to the maximum number of frames
+    if sorted_prompts[-1][0] != str(settings.max_frames):
+        sorted_prompts.append((str(settings.max_frames), sorted_prompts[-1][1]))
+
+    # Setup containers for interpolated prompts
+    cur_prompt_series = pd.Series([np.nan for a in range(settings.max_frames)])
+    nxt_prompt_series = pd.Series([np.nan for a in range(settings.max_frames)])
+
+    # simple array for strength values
+    weight_series = [np.nan] * settings.max_frames
+
+    # in case there is only one keyed prompt, set all prompts to that prompt
+    if len(sorted_prompts) == 1:
+        for i in range(0, len(cur_prompt_series) - 1):
+            current_prompt = sorted_prompts[0][1]
+            cur_prompt_series[i] = str(current_prompt)
+            nxt_prompt_series[i] = str(current_prompt)
+
+    #make sure prompt weights are tuples and convert them if not
+    convert_pw_to_tuples(settings)
+
+    # Initialized outside of loop for nan check
+    current_key = 0
+    next_key = 0
+    # For every keyframe prompt except the last
+    for i in range(0, len(sorted_prompts) - 1):
+        # Get current and next keyframe
+        current_key = int(sorted_prompts[i][0])
+        next_key = int(sorted_prompts[i + 1][0])
+
+        # Ensure there's no weird ordering issues or duplication in the animation prompts
+        # (unlikely because we sort above, and the json parser will strip dupes)
+        if current_key >= next_key:
+            print(
+                f"WARNING: Sequential prompt keyframes {i}:{current_key} and {i + 1}:{next_key} are not monotonously increasing; skipping interpolation.")
+            continue
+
+        # Get current and next keyframes' positive and negative prompts (if any)
+        current_prompt = sorted_prompts[i][1]
+        next_prompt = sorted_prompts[i + 1][1]
+
+        # Calculate how much to shift the weight from current to next prompt at each frame.
+        weight_step = 1 / (next_key - current_key)
+
+        for f in range(max(current_key, 0), min(next_key, len(cur_prompt_series))):
+            next_weight = weight_step * (f - current_key)
+            current_weight = 1 - next_weight
+
+            # add the appropriate prompts and weights to their respective containers.
+            weight_series[f] = 0.0
+            cur_prompt_series[f] = str(current_prompt)
+            nxt_prompt_series[f] = str(next_prompt)
+
+            weight_series[f] += current_weight
+
+        current_key = next_key
+        next_key = settings.max_frames
+        current_weight = 0.0
+
+    index_offset = 0
+
+    # Evaluate the current and next prompt's expressions
+    for i in range(settings.start_frame, len(cur_prompt_series)):
+        cur_prompt_series[i] = prepare_batch_promptA(cur_prompt_series[i], settings, i)
+        nxt_prompt_series[i] = prepare_batch_promptA(nxt_prompt_series[i], settings, i)
+        if settings.print_output == True:
+            # Show the to/from prompts with evaluated expressions for transparency.
+            print("\n", "Max Frames: ", settings.max_frames, "\n", "frame index: ", (settings.start_frame + i), "\n", "Current Prompt: ",
+                  cur_prompt_series[i], "\n", "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ",
+                  weight_series[i], "\n")
+        index_offset = index_offset + 1
+
+    # Output methods depending if the prompts are the same or if the current frame is a keyframe.
+    # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
+    return (cur_prompt_series, nxt_prompt_series, weight_series)
 
 def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_text, app_text, prompt_weight_1=[],
                               prompt_weight_2=[], prompt_weight_3=[], prompt_weight_4=[], Is_print = False):
@@ -173,13 +305,12 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
 def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []
     cond_out = []
-
     max_size = 0
     if max_size == 0:
         for i in range(len(cur_prompt_series)):
             tokens = clip.tokenize(str(cur_prompt_series[i]))
             cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
-            tensor_size = cond_to.shape[1]  # Assuming dimension 1 represents the size you're interested in
+            tensor_size = cond_to.shape[1]
             max_size = max(max_size, tensor_size)
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
@@ -204,6 +335,7 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     final_pooled_output = torch.cat(pooled_out, dim=0)
     final_conditioning = torch.cat(cond_out, dim=0)
 
+
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
 
 
@@ -213,7 +345,13 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
 def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []
     cond_out = []
-
+    max_size = 0
+    if max_size == 0:
+        for i in range(len(cur_prompt_series)):
+            tokens = clip.tokenize(str(cur_prompt_series[i]))
+            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+            tensor_size = cond_to.shape[1]
+            max_size = max(max_size, tensor_size)
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
@@ -223,7 +361,7 @@ def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series,
 
         interpolated_conditioning = addWeighted([[cond_to, {"pooled_output": pooled_to}]],
                                                 [[cond_from, {"pooled_output": pooled_from}]],
-                                                weight_series[i])
+                                                weight_series[i], max_size)
 
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output", pooled_from)
@@ -236,14 +374,14 @@ def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series,
 
     return cond_out, pooled_out
 
-def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series):
+def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series, max_size):
     pooled_out = []
     cond_out = []
 
     for i in range(len(cur_prompt_series)):
         interpolated_conditioning = addWeighted(cur_prompt_series[i],
                                                 nxt_prompt_series[i],
-                                                weight_series[i])
+                                                weight_series[i], max_size)
 
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output")
@@ -432,6 +570,25 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
 
     current_conds = []
     next_conds = []
+    max_size = 0
+    max_size_G = 0
+    max_size_L = 0
+
+    if max_size == 0:
+        for i in range(len(cur_prompt_series_G)):
+            tokens = clip.tokenize(str(cur_prompt_series_G[i]))
+            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+            tensor_size = cond_to.shape[1]
+            max_size_G = max(max_size, tensor_size)
+
+        for i in range(len(cur_prompt_series_L)):
+            tokens = clip.tokenize(str(cur_prompt_series_L[i]))
+            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+            tensor_size = cond_to.shape[1]
+            max_size_L = max(max_size, tensor_size)
+
+        max_size = max(max_size_G,max_size_L)
+
     for i in range(0, max_frames):
         current_conds.append(SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height,
                                 cur_prompt_series_G[i], cur_prompt_series_L[i]))
@@ -445,4 +602,4 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
                   "\n", "Current Prompt L: ", cur_prompt_series_L[i], "\n", "Next Prompt G: ", nxt_prompt_series_G[i],
                   "\n", "Next Prompt L : ", nxt_prompt_series_L[i],  "\n"), "\n", "Current weight: ", weight_series[i]
 
-    return current_conds, next_conds, weight_series
+    return current_conds, next_conds, weight_series, max_size
