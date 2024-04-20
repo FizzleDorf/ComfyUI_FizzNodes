@@ -17,7 +17,7 @@ import json
 class ScheduleSettings:
     def __init__(
             self,
-            text_G: str,
+            text_g: str,
             pre_text_G: str,
             app_text_G: str,
             text_L: str,
@@ -38,10 +38,10 @@ class ScheduleSettings:
             target_width: int,
             target_height: int,
     ):
-        self.text_G=text_G
+        self.text_g=text_g
         self.pre_text_G=pre_text_G
         self.app_text_G=app_text_G
-        self.text_L=text_L
+        self.text_l=text_L
         self.pre_text_L=pre_text_L
         self.app_text_L=app_text_L
         self.max_frames=max_frames
@@ -82,6 +82,8 @@ def addWeighted(conditioning_to, conditioning_from, conditioning_to_strength, ma
 
         tw = torch.mul(t1, conditioning_to_strength) + torch.mul(t0, (1.0 - conditioning_to_strength))
         t_to = conditioning_to[i][1].copy()
+
+        t_to["pooled_output"] = pooled_output_from
 
         if pooled_output_from is not None and pooled_output_to is not None:
             # Pad pooled outputs if available
@@ -277,9 +279,9 @@ def PoolAnimConditioning(cur_prompt, nxt_prompt, weight, clip):
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
         return addWeighted([[cond_to, {"pooled_output": pooled_to}]], [[cond_from, {"pooled_output": pooled_from}]], weight)
 
-def SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l):
-    tokens = clip.tokenize(text_g)
-    tokens["l"] = clip.tokenize(text_l)["l"]
+def SDXLencode(g, l, settings:ScheduleSettings, clip):
+    tokens = clip.tokenize(g)
+    tokens["l"] = clip.tokenize(l)["l"]
     if len(tokens["l"]) != len(tokens["g"]):
         empty = clip.tokenize("")
         while len(tokens["l"]) < len(tokens["g"]):
@@ -287,7 +289,15 @@ def SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height,
         while len(tokens["l"]) > len(tokens["g"]):
             tokens["g"] += empty["g"]
     cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
-    return [[cond, {"pooled_output": pooled, "width": width, "height": height, "crop_w": crop_w, "crop_h": crop_h, "target_width": target_width, "target_height": target_height}]]
+    return [[cond, {
+        "pooled_output": pooled,
+        "width": settings.width,
+        "height": settings.height,
+        "crop_w": settings.crop_w,
+        "crop_h": settings.crop_h,
+        "target_width": settings.target_width,
+        "target_height": settings.target_height
+    }]]
 
 def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames, current_frame, clip,  app_text_G, app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w, crop_h, target_width, target_height, print_output): #parse the conditioning strength and determine in-betweens.
         #Get prompts sorted by keyframe
@@ -333,8 +343,6 @@ def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames,
                 cur_prompt_series_L[i] = str(pre_text_L) + " " + str(current_prompt_L) + " " + str(app_text_L)
                 nxt_prompt_series_L[i] = str(pre_text_L) + " " + str(current_prompt_L) + " " + str(app_text_L)
 
-        
-                
         #Initialized outside of loop for nan check
         current_key = 0
         next_key = 0
@@ -453,7 +461,7 @@ def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames,
 
         #Output methods depending if the prompts are the same or if the current frame is a keyframe.
         #if it is an in-between frame and the prompts differ, composable diffusion will be performed.
-        current_cond = SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, cur_prompt_series_G[current_frame], cur_prompt_series_L[current_frame])
+        current_cond = SDXLencode(settings, clip, cur_prompt_series_G[current_frame], cur_prompt_series_L[current_frame])
 
         if str(cur_prompt_series_G[current_frame]) == str(nxt_prompt_series_G[current_frame]) and str(cur_prompt_series_L[current_frame]) == str(nxt_prompt_series_L[current_frame]):           
             return current_cond
@@ -462,9 +470,9 @@ def interpolate_prompts_SDXL(animation_promptsG, animation_promptsL, max_frames,
             return current_cond
         
         if weight_series[current_frame] == 0:
-            next_cond = SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, cur_prompt_series_G[current_frame], cur_prompt_series_L[current_frame])
+            next_cond = SDXLencode(settings, clip, nxt_prompt_series_G[current_frame], nxt_prompt_series_L[current_frame])
             return next_cond
         
         else:
-            next_cond = SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height, cur_prompt_series_G[current_frame], cur_prompt_series_L[current_frame])
+            next_cond = SDXLencode(settings, clip, nxt_prompt_series_G[current_frame], nxt_prompt_series_L[current_frame])
             return addWeighted(current_cond, next_cond, weight_series[current_frame])

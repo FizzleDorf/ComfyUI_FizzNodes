@@ -85,20 +85,18 @@ def batch_split_weighted_subprompts(text, pre_text, app_text):
             neg[frame] = neg[frame][:-1]
     return pos, neg
 
-#converts the prompt weight variables to tuples. if it is an int variable,
-#set all frames to have the same value
+# converts the prompt weight variables to tuples. if it is an int variable,
+# set all frames to have the same value
 def convert_pw_to_tuples(settings):
     if isinstance(settings.pw_a, (int, float, np.float64)):
         settings.pw_a = tuple([settings.pw_a] * settings.max_frames)
-
     if isinstance(settings.pw_b, (int, float, np.float64)):
         settings.pw_b = tuple([settings.pw_b] * settings.max_frames)
-
     if isinstance(settings.pw_c, (int, float, np.float64)):
         settings.pw_c = tuple([settings.pw_c] * settings.max_frames)
-
     if isinstance(settings.pw_d, (int, float, np.float64)):
         settings.pw_d = tuple([settings.pw_d] * settings.max_frames)
+
 
 def interpolate_prompt_seriesA(animation_prompts, settings:ScheduleSettings):
 
@@ -301,7 +299,9 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     return (cur_prompt_series, nxt_prompt_series, weight_series)
 
+def encode_and_pad(cur_prompt_series, nxt_prompt_series,clip):
 
+    return clip
 def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []
     cond_out = []
@@ -337,9 +337,6 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
 
 
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
-
-
-
 
 
 def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
@@ -395,15 +392,14 @@ def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_s
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
 
 
-def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_frames, clip, app_text_G,
-                             app_text_L, pre_text_G, pre_text_L, pw_a, pw_b, pw_c, pw_d, width, height, crop_w,
-                             crop_h, target_width, target_height, Is_print = False):
-
+def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, settings: ScheduleSettings):
+    convert_pw_to_tuples(settings)
     # parse the conditioning strength and determine in-betweens.
     # Get prompts sorted by keyframe
-    max_f = max_frames  # needed for numexpr even though it doesn't look like it's in use.
+    max_f = settings.max_frames  # needed for numexpr even though it doesn't look like it's in use.
     parsed_animation_promptsG = {}
     parsed_animation_promptsL = {}
+
     for key, value in animation_promptsG.items():
         if check_is_number(key):  # default case 0:(1 + t %5), 30:(5-t%2)
             parsed_animation_promptsG[key] = value
@@ -421,14 +417,14 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
     sorted_prompts_L = sorted(parsed_animation_promptsL.items(), key=lambda item: int(item[0]))
 
     # Setup containers for interpolated prompts
-    cur_prompt_series_G = pd.Series([np.nan for a in range(max_frames)])
-    nxt_prompt_series_G = pd.Series([np.nan for a in range(max_frames)])
+    cur_prompt_series_G = pd.Series([np.nan for a in range(settings.max_frames)])
+    nxt_prompt_series_G = pd.Series([np.nan for a in range(settings.max_frames)])
 
-    cur_prompt_series_L = pd.Series([np.nan for a in range(max_frames)])
-    nxt_prompt_series_L = pd.Series([np.nan for a in range(max_frames)])
+    cur_prompt_series_L = pd.Series([np.nan for a in range(settings.max_frames)])
+    nxt_prompt_series_L = pd.Series([np.nan for a in range(settings.max_frames)])
 
     # simple array for strength values
-    weight_series = [np.nan] * max_frames
+    weight_series = [np.nan] * settings.max_frames
 
     def constructPrompt(sorted_prompts, cur_prompt, nxt_prompt, pre_text, app_text):
         if len(sorted_prompts) - 1 == 0:
@@ -439,10 +435,9 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
         return cur_prompt, nxt_prompt
 
     # in case there is only one keyed promt, set all prompts to that prompt
-    cur_prompt_series_G, nxt_prompt_series_G = constructPrompt(sorted_prompts_G, cur_prompt_series_G, nxt_prompt_series_G, pre_text_G, app_text_G)
+    cur_prompt_series_G, nxt_prompt_series_G = constructPrompt(sorted_prompts_G, cur_prompt_series_G, nxt_prompt_series_G, settings.pre_text_G, settings.app_text_G)
     cur_prompt_series_L, nxt_prompt_series_L = constructPrompt(sorted_prompts_G, cur_prompt_series_G,
-                                                               nxt_prompt_series_G, pre_text_G, app_text_G)
-    print("Debug: ", cur_prompt_series_G, nxt_prompt_series_G)
+                                                               nxt_prompt_series_G, settings.pre_text_G, settings.app_text_G)
     if len(sorted_prompts_L) - 1 == 0:
         for i in range(0, len(cur_prompt_series_L) - 1):
             current_prompt_L = sorted_prompts_L[0][1]
@@ -478,18 +473,18 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
             current_weight = 1 - next_weight
 
             # add the appropriate prompts and weights to their respective containers.
-            if f < max_frames:
+            if f < settings.max_frames:
                 cur_prompt_series_G[f] = ''
                 nxt_prompt_series_G[f] = ''
                 weight_series[f] = 0.0
 
-                cur_prompt_series_G[f] += (str(pre_text_G) + " " + str(current_prompt_G) + " " + str(app_text_G))
-                nxt_prompt_series_G[f] += (str(pre_text_G) + " " + str(next_prompt_G) + " " + str(app_text_G))
+                cur_prompt_series_G[f] += (str(settings.pre_text_G) + " " + str(current_prompt_G) + " " + str(settings.app_text_G))
+                nxt_prompt_series_G[f] += (str(settings.pre_text_G) + " " + str(next_prompt_G) + " " + str(settings.app_text_G))
 
                 weight_series[f] += current_weight
 
         current_key = next_key
-        next_key = max_frames
+        next_key = settings.max_frames
         current_weight = 0.0
         # second loop to catch any nan runoff
         for f in range(current_key, next_key):
@@ -500,16 +495,15 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
             nxt_prompt_series_G[f] = ''
             weight_series[f] = current_weight
 
-            cur_prompt_series_G[f] += (str(pre_text_G) + " " + str(current_prompt_G) + " " + str(app_text_G))
-            nxt_prompt_series_G[f] += (str(pre_text_G) + " " + str(next_prompt_G) + " " + str(app_text_G))
+            cur_prompt_series_G[f] += (str(settings.pre_text_G) + " " + str(current_prompt_G) + " " + str(settings.app_text_G))
+            nxt_prompt_series_G[f] += (str(settings.pre_text_G) + " " + str(next_prompt_G) + " " + str(settings.app_text_G))
 
     # Reset outside of loop for nan check
     current_key = 0
     next_key = 0
 
-    # For every keyframe prompt except the last
     for i in range(0, len(sorted_prompts_L) - 1):
-        # Get current and next keyframe
+
         current_key = int(sorted_prompts_L[i][0])
         next_key = int(sorted_prompts_L[i + 1][0])
 
@@ -532,18 +526,18 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
             current_weight = 1 - next_weight
 
             # add the appropriate prompts and weights to their respective containers.
-            if f < max_frames:
+            if f < settings.max_frames:
                 cur_prompt_series_L[f] = ''
                 nxt_prompt_series_L[f] = ''
                 weight_series[f] = 0.0
 
-                cur_prompt_series_L[f] += (str(pre_text_L) + " " + str(current_prompt_L) + " " + str(app_text_L))
-                nxt_prompt_series_L[f] += (str(pre_text_L) + " " + str(next_prompt_L) + " " + str(app_text_L))
+                cur_prompt_series_L[f] += (str(settings.pre_text_L) + " " + str(current_prompt_L) + " " + str(settings.app_text_L))
+                nxt_prompt_series_L[f] += (str(settings.pre_text_L) + " " + str(next_prompt_L) + " " + str(settings.app_text_L))
 
                 weight_series[f] += current_weight
 
         current_key = next_key
-        next_key = max_frames
+        next_key = settings.max_frames
         current_weight = 0.0
         # second loop to catch any nan runoff
         for f in range(current_key, next_key):
@@ -554,19 +548,15 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
             nxt_prompt_series_L[f] = ''
             weight_series[f] = current_weight
 
-            cur_prompt_series_L[f] += (str(pre_text_L) + " " + str(current_prompt_L) + " " + str(app_text_L))
-            nxt_prompt_series_L[f] += (str(pre_text_L) + " " + str(next_prompt_L) + " " + str(app_text_L))
+            cur_prompt_series_L[f] += (str(settings.pre_text_L) + " " + str(current_prompt_L) + " " + str(settings.app_text_L))
+            nxt_prompt_series_L[f] += (str(settings.pre_text_L) + " " + str(next_prompt_L) + " " + str(settings.app_text_L))
 
     # Evaluate the current and next prompt's expressions
-    for i in range(0, max_frames):
-        cur_prompt_series_G[i] = prepare_batch_prompt(cur_prompt_series_G[i], max_frames, i,
-                                                             pw_a, pw_b, pw_c, pw_d)
-        nxt_prompt_series_G[i] = prepare_batch_prompt(nxt_prompt_series_G[i], max_frames, i,
-                                                             pw_a, pw_b, pw_c, pw_d)
-        cur_prompt_series_L[i] = prepare_batch_prompt(cur_prompt_series_L[i], max_frames, i,
-                                                             pw_a, pw_b, pw_c, pw_d)
-        nxt_prompt_series_L[i] = prepare_batch_prompt(nxt_prompt_series_L[i], max_frames, i,
-                                                             pw_a, pw_b, pw_c, pw_d)
+    for i in range(0, settings.max_frames):
+        cur_prompt_series_G[i] = prepare_batch_promptA(cur_prompt_series_G[i], settings, i)
+        nxt_prompt_series_G[i] = prepare_batch_promptA(nxt_prompt_series_G[i], settings, i)
+        cur_prompt_series_L[i] = prepare_batch_promptA(cur_prompt_series_L[i], settings, i)
+        nxt_prompt_series_L[i] = prepare_batch_promptA(nxt_prompt_series_L[i], settings, i)
 
     current_conds = []
     next_conds = []
@@ -589,16 +579,14 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, max_fram
 
         max_size = max(max_size_G,max_size_L)
 
-    for i in range(0, max_frames):
-        current_conds.append(SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height,
-                                cur_prompt_series_G[i], cur_prompt_series_L[i]))
-        next_conds.append(SDXLencode(clip, width, height, crop_w, crop_h, target_width, target_height,
-                                nxt_prompt_series_G[i], nxt_prompt_series_L[i]))
+    for i in range(0, settings.max_frames):
+        current_conds.append(SDXLencode(cur_prompt_series_G[i], cur_prompt_series_L[i], settings, clip))
+        next_conds.append(SDXLencode(nxt_prompt_series_L[i], nxt_prompt_series_L[i], settings, clip))
 
-    if Is_print == True:
+    if settings.print_output == True:
         # Show the to/from prompts with evaluated expressions for transparency.
-        for i in range(0, max_frames):
-            print("\n", "Max Frames: ", max_frames, "\n", "Current Prompt G: ", cur_prompt_series_G[i],
+        for i in range(0, settings.max_frames):
+            print("\n", "Max Frames: ", settings.max_frames, "\n", "Current Prompt G: ", cur_prompt_series_G[i],
                   "\n", "Current Prompt L: ", cur_prompt_series_L[i], "\n", "Next Prompt G: ", nxt_prompt_series_G[i],
                   "\n", "Next Prompt L : ", nxt_prompt_series_L[i],  "\n"), "\n", "Current weight: ", weight_series[i]
 
