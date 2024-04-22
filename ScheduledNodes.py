@@ -214,6 +214,9 @@ class BatchPromptScheduleLatentInput:
         )
         return batch_prompt_schedule_latentInput(settings,clip, num_latents)
 
+# This node prepares the strings and calculates
+# the numexpr expressions. It returns a single
+# string at the current_frame input.
 class StringSchedule:
     @classmethod
     def INPUT_TYPES(s):
@@ -261,6 +264,10 @@ class StringSchedule:
         )
         return string_schedule(settings)
 
+
+# This node prepares the strings and calculates
+# the numexpr expressions. It returns a batch of
+# strings.
 class BatchStringSchedule:
     @classmethod
     def INPUT_TYPES(s):
@@ -311,7 +318,75 @@ class BatchStringSchedule:
         )
         return batch_string_schedule(settings)
 
+# Same as the regular node just for SDXL
+# clips instead. the G and L clip can be
+# scheduled separately before tokenization,
+# goes through the same add_weighted process
+# and returns the current, next or averaged
+# conditioning.
+class PromptScheduleEncodeSDXL:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {
+                "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+                "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+                "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
+                "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
+                "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+                "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+                "text_g": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
+                "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
+                "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
+                "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0}),
+                "print_output":("BOOLEAN", {"default": False})
+        },
+            "optional": {
+                "pre_text_G": ("STRING", {"multiline": True, "forceInput": True}),
+                "app_text_G": ("STRING", {"multiline": True, "forceInput": True}),
+                "pre_text_L": ("STRING", {"multiline": True, "forceInput": True}),
+                "app_text_L": ("STRING", {"multiline": True, "forceInput": True}),
+                "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
+                "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
+                "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
+                "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
+            }
+        }
+    RETURN_TYPES = ("CONDITIONING","CONDITIONING",)
+    RETURN_NAMES = ("POS", "NEG",)
+    FUNCTION = "animate"
 
+    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
+
+    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, current_frame, print_output, pw_a, pw_b, pw_c, pw_d):
+        settings = ScheduleSettings(
+            text_g=text_g,
+            pre_text_G=pre_text_G,
+            app_text_G=app_text_G,
+            text_L=text_l,
+            pre_text_L=pre_text_L,
+            app_text_L=app_text_L,
+            max_frames=max_frames,
+            current_frame=current_frame,
+            print_output=print_output,
+            pw_a=pw_a,
+            pw_b=pw_b,
+            pw_c=pw_c,
+            pw_d=pw_d,
+            start_frame=0,
+            width=width,
+            height=height,
+            crop_w=crop_w,
+            crop_h=crop_h,
+            target_width=target_width,
+            target_height=target_height,
+        )
+        return prompt_schedule_SDXL(settings,clip)
+
+# Same as the regular node just for SDXL
+# clips instead. the G and L clip can be
+# scheduled separately before tokenization,
+# goes through the same add_weighted process
+# and returns a batch of conditionings.
 class BatchPromptScheduleEncodeSDXL:
     @classmethod
     def INPUT_TYPES(s):
@@ -370,6 +445,13 @@ class BatchPromptScheduleEncodeSDXL:
         )
         return batch_prompt_schedule_SDXL(settings, clip)
 
+# Same as the regular node just for SDXL
+# clips instead. the G and L clip can be
+# scheduled separately before tokenization,
+# goes through the same add_weighted process
+# and returns a batch of conditionings. The
+# max_size is input by the number of latents
+# in the input.
 class BatchPromptScheduleEncodeSDXLLatentInput:
     @classmethod
     def INPUT_TYPES(s):
@@ -427,63 +509,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
         )
         return batch_prompt_schedule_SDXL_latentInput(settings, clip, num_latents)
 
-class PromptScheduleEncodeSDXL:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {"required": {
-                "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
-                "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
-                "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
-                "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
-                "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
-                "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
-                "text_g": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
-                "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
-                "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
-                "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0}),
-                "print_output":("BOOLEAN", {"default": False})
-        },
-            "optional": {
-                "pre_text_G": ("STRING", {"multiline": True, "forceInput": True}),
-                "app_text_G": ("STRING", {"multiline": True, "forceInput": True}),
-                "pre_text_L": ("STRING", {"multiline": True, "forceInput": True}),
-                "app_text_L": ("STRING", {"multiline": True, "forceInput": True}),
-                "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
-                "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
-                "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
-                "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
-            }
-        }
-    RETURN_TYPES = ("CONDITIONING","CONDITIONING",)
-    RETURN_NAMES = ("POS", "NEG",)
-    FUNCTION = "animate"
 
-    CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
-
-    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, current_frame, print_output, pw_a, pw_b, pw_c, pw_d):
-        settings = ScheduleSettings(
-            text_g=text_g,
-            pre_text_G=pre_text_G,
-            app_text_G=app_text_G,
-            text_L=text_l,
-            pre_text_L=pre_text_L,
-            app_text_L=app_text_L,
-            max_frames=max_frames,
-            current_frame=current_frame,
-            print_output=print_output,
-            pw_a=pw_a,
-            pw_b=pw_b,
-            pw_c=pw_c,
-            pw_d=pw_d,
-            start_frame=0,
-            width=width,
-            height=height,
-            crop_w=crop_w,
-            crop_h=crop_h,
-            target_width=target_width,
-            target_height=target_height,
-        )
-        return prompt_schedule_SDXL(settings,clip)
 
 # This node schedules the prompt using separate nodes as the keyframes.
 # The values in the prompt are evaluated in NodeFlowEnd.
@@ -569,6 +595,7 @@ class PromptScheduleNodeFlowEnd:
         )
         return prompt_schedule(settings, clip)
 
+#same as the other node end except it returns a batch
 class BatchPromptScheduleNodeFlowEnd:
     @classmethod
     def INPUT_TYPES(s):
@@ -622,6 +649,10 @@ class BatchPromptScheduleNodeFlowEnd:
         )
         return batch_prompt_schedule(settings, clip)
 
+# WIP, requires some hijacking but otherwise
+# applies every scheduled gligen bound box to
+# a batch of latents with the scheduled
+# conditionings
 class BatchGLIGENSchedule:
     @classmethod
     def INPUT_TYPES(s):
@@ -744,7 +775,13 @@ class BatchValueScheduleLatentInput:
             print("ValueSchedule: ", t)
         return (t, list(map(int,t)), num_latents, )
 
-# Expects a Batch Value Schedule list input, it exports an image batch with images taken from an input image batch
+# Expects a Batch Value Schedule list input,
+# it exports an image batch with images taken
+# from an input image batch.
+# Original code is from:
+# ComfyUI-Image-Selector by SLAPaper
+# https://github.com/SLAPaper/ComfyUI-Image-Selector
+# licensed under Apache-2.0
 class ImagesFromBatchSchedule:
     @classmethod
     def INPUT_TYPES(s):
@@ -772,7 +809,6 @@ class ImagesFromBatchSchedule:
                                                                            0, 0, 0, print_output)
         selImages = selectImages(images,pos_cur_prompt[current_frame])
         return selImages
-
 
 def selectImages(images: torch.Tensor, selected_indexes: str):
     shape = images.shape

@@ -299,9 +299,6 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     return (cur_prompt_series, nxt_prompt_series, weight_series)
 
-def encode_and_pad(cur_prompt_series, nxt_prompt_series,clip):
-
-    return clip
 def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []
     cond_out = []
@@ -310,8 +307,7 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
         for i in range(len(cur_prompt_series)):
             tokens = clip.tokenize(str(cur_prompt_series[i]))
             cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
-            tensor_size = cond_to.shape[1]
-            max_size = max(max_size, tensor_size)
+            max_size = max(max_size, cond_to.shape[1])
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
@@ -335,9 +331,7 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     final_pooled_output = torch.cat(pooled_out, dim=0)
     final_conditioning = torch.cat(cond_out, dim=0)
 
-
     return [[final_conditioning, {"pooled_output": final_pooled_output}]]
-
 
 def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
     pooled_out = []
@@ -349,6 +343,7 @@ def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series,
             cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
             tensor_size = cond_to.shape[1]
             max_size = max(max_size, tensor_size)
+
     for i in range(len(cur_prompt_series)):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)

@@ -24,8 +24,6 @@ def prompt_schedule(settings:ScheduleSettings,clip):
     pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_seriesA(pos, settings)
     neg_cur_prompt, neg_nxt_prompt, weight = interpolate_prompt_seriesA(neg, settings)
 
-    #encode prompts
-
     # Apply composable diffusion across the batch
     p = PoolAnimConditioning(pos_cur_prompt[settings.current_frame], pos_nxt_prompt[settings.current_frame],
                              weight[settings.current_frame], clip)
@@ -46,11 +44,6 @@ def batch_prompt_schedule(settings:ScheduleSettings,clip):
     # Interpolate the positive prompt weights over frames
     pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_seriesA(pos, settings)
     neg_cur_prompt, neg_nxt_prompt, weight = interpolate_prompt_seriesA(neg, settings)
-
-    # encode prompts
-
-    # pad conditionings to largest tensor size
-
 
     # Apply composable diffusion across the batch
     p = BatchPoolAnimConditioning(pos_cur_prompt, pos_nxt_prompt, weight, clip, )
