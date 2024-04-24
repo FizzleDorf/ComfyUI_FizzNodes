@@ -366,14 +366,14 @@ def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series,
 
     return cond_out, pooled_out
 
-def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series, max_size):
+def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series):
     pooled_out = []
     cond_out = []
 
     for i in range(len(cur_prompt_series)):
         interpolated_conditioning = addWeighted(cur_prompt_series[i],
                                                 nxt_prompt_series[i],
-                                                weight_series[i], max_size)
+                                                weight_series[i])
 
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output")
@@ -555,28 +555,11 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
 
     current_conds = []
     next_conds = []
-    max_size = 0
-    max_size_G = 0
-    max_size_L = 0
-
-    if max_size == 0:
-        for i in range(len(cur_prompt_series_G)):
-            tokens = clip.tokenize(str(cur_prompt_series_G[i]))
-            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
-            tensor_size = cond_to.shape[1]
-            max_size_G = max(max_size, tensor_size)
-
-        for i in range(len(cur_prompt_series_L)):
-            tokens = clip.tokenize(str(cur_prompt_series_L[i]))
-            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
-            tensor_size = cond_to.shape[1]
-            max_size_L = max(max_size, tensor_size)
-
-        max_size = max(max_size_G,max_size_L)
 
     for i in range(0, settings.max_frames):
         current_conds.append(SDXLencode(cur_prompt_series_G[i], cur_prompt_series_L[i], settings, clip))
         next_conds.append(SDXLencode(nxt_prompt_series_L[i], nxt_prompt_series_L[i], settings, clip))
+
 
     if settings.print_output == True:
         # Show the to/from prompts with evaluated expressions for transparency.
@@ -585,4 +568,4 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
                   "\n", "Current Prompt L: ", cur_prompt_series_L[i], "\n", "Next Prompt G: ", nxt_prompt_series_G[i],
                   "\n", "Next Prompt L : ", nxt_prompt_series_L[i],  "\n"), "\n", "Current weight: ", weight_series[i]
 
-    return current_conds, next_conds, weight_series, max_size
+    return current_conds, next_conds, weight_series
