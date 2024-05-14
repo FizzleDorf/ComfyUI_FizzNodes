@@ -170,7 +170,7 @@ class BatchPromptScheduleLatentInput:
                     "text": ("STRING", {"multiline": True, "default": defaultPrompt}),
                     "clip": ("CLIP",),
                     "num_latents": ("LATENT", ),
-                    "print_output":("BOOLEAN", {"default": False, "forceInput": True}),
+                    "print_output":("BOOLEAN", {"default": False}),
                 },
                 "optional": {"pre_text": ("STRING", {"multiline": True, "forceInput": True}),
                     "app_text": ("STRING", {"multiline": True, "forceInput": True}),
