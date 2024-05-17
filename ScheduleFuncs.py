@@ -109,7 +109,8 @@ def pad_with_zeros(tensor, target_length):
     return tensor, target_length
 
 def process_input_text(text: str) -> dict:
-    input_text = "{" + text + "}"
+    input_text = text.replace('\n', '')
+    input_text = "{" + input_text + "}"
     input_text = re.sub(r',\s*}', '}', input_text)
     animation_prompts = json.loads(input_text.strip())
     return animation_prompts
