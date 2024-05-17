@@ -1,0 +1,15 @@
+[project]
+name = "comfyui_fizznodes"
+description = "Scheduled prompts, scheduled float/int values and wave function nodes for animations and utility. compatable with [a/framesync](https://www.framesync.xyz/) and [a/keyframe-string-generator](https://www.chigozie.co.uk/keyframe-string-generator/) for audio synced animations in Comfyui."
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["pandas", "numexpr"]
+
+[project.urls]
+Repository = "https://github.com/FizzleDorf/ComfyUI_FizzNodes"
+
+#  Used by Comfy Registry https://comfyregistry.org
+[tool.comfy]
+PublisherId = "fizzledorf"
+DisplayName = "ComfyUI_FizzNodes"
+Icon = ""
