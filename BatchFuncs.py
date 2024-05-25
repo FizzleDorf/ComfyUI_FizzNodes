@@ -178,14 +178,22 @@ def interpolate_prompt_seriesA(animation_prompts, settings:ScheduleSettings):
     index_offset = 0
 
     # Evaluate the current and next prompt's expressions
-    for i in range(settings.start_frame, len(cur_prompt_series)):
+    for i in range(0, len(cur_prompt_series)):
         cur_prompt_series[i] = prepare_batch_promptA(cur_prompt_series[i], settings, i)
         nxt_prompt_series[i] = prepare_batch_promptA(nxt_prompt_series[i], settings, i)
         if settings.print_output == True:
             # Show the to/from prompts with evaluated expressions for transparency.
-            print("\n", "Max Frames: ", settings.max_frames, "\n", "frame index: ", (settings.start_frame + i), "\n", "Current Prompt: ",
-                  cur_prompt_series[i], "\n", "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ",
-                  weight_series[i], "\n")
+            if(settings.start_frame >= i):
+                if(settings.end_frame > 0):
+                    if(settings.end_frame > i):
+                        print("\n", "Max Frames: ", settings.max_frames, "\n", "frame index: ", (settings.start_frame + i),
+                              "\n", "Current Prompt: ",
+                              cur_prompt_series[i], "\n", "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ",
+                              weight_series[i], "\n")
+                else:
+                    print("\n", "Max Frames: ", settings.max_frames, "\n", "frame index: ", (settings.start_frame + i), "\n", "Current Prompt: ",
+                          cur_prompt_series[i], "\n", "Next Prompt: ", nxt_prompt_series[i], "\n", "Strength : ",
+                          weight_series[i], "\n")
         index_offset = index_offset + 1
 
     # Output methods depending if the prompts are the same or if the current frame is a keyframe.
@@ -280,12 +288,16 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
         current_weight = 0.0
 
     index_offset = 0
+
+
+
     # Evaluate the current and next prompt's expressions
     for i in range(start_frame, len(cur_prompt_series)):
         cur_prompt_series[i] = prepare_batch_prompt(cur_prompt_series[i], max_frames, i, prompt_weight_1[i],
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
         nxt_prompt_series[i] = prepare_batch_prompt(nxt_prompt_series[i], max_frames, i, prompt_weight_1[i],
                                                     prompt_weight_2[i], prompt_weight_3[i], prompt_weight_4[i])
+
         if Is_print == True:
             # Show the to/from prompts with evaluated expressions for transparency.
             print("\n", "Max Frames: ", max_frames, "\n", "frame index: ", (start_frame + i), "\n", "Current Prompt: ",
@@ -295,7 +307,7 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
 
 
 
-    # Output methods depending if the prompts are the same or if the current frame is a keyframe.
+    # Output methods depend on if the prompts are the same or if the current frame is a keyframe.
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     return (cur_prompt_series, nxt_prompt_series, weight_series)
 
