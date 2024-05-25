@@ -115,13 +115,6 @@ def process_input_text(text: str) -> dict:
     animation_prompts = json.loads(input_text.strip())
     return animation_prompts
 
-#def pad_with_zeros(tensor, target_length):
-#    current_length = tensor.shape[1]
-#    if current_length < target_length:
-#        padding = torch.zeros(tensor.shape[0], target_length - current_length, tensor.shape[2]).to(tensor.device)
-#        tensor = torch.cat([tensor, padding], dim=1)
-#    return tensor
-
 def check_is_number(value):
     float_pattern = r'^(?=.)([+-]?([0-9]*)(\.([0-9]+))?)$'
     return re.match(float_pattern, value)

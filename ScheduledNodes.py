@@ -695,8 +695,6 @@ class BatchGLIGENSchedule:
             # Update x and y values
             x += x_change
             y += y_change
-            print(x)
-            print(y)
             out.append(self.append(conditioning_to, clip, gligen_textbox_model, pre_text, width, height, x, y))
 
         return (out,)
