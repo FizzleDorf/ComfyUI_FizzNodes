@@ -121,14 +121,15 @@ def interpolate_prompt_seriesA(animation_prompts, settings:ScheduleSettings):
         sorted_prompts.append((str(settings.max_frames), sorted_prompts[-1][1]))
 
     # Setup containers for interpolated prompts
-    cur_prompt_series = pd.Series([np.nan for a in range(settings.max_frames)])
-    nxt_prompt_series = pd.Series([np.nan for a in range(settings.max_frames)])
+    nan_list = [np.nan for a in range(settings.max_frames)]
+    cur_prompt_series = pd.Series(nan_list,dtype=object)
+    nxt_prompt_series = pd.Series(nan_list,dtype=object)
 
     # simple array for strength values
     weight_series = [np.nan] * settings.max_frames
 
     # in case there is only one keyed prompt, set all prompts to that prompt
-    if len(sorted_prompts) == 1:
+    if settings.max_frames == 1:
         for i in range(0, len(cur_prompt_series) - 1):
             current_prompt = sorted_prompts[0][1]
             cur_prompt_series[i] = str(current_prompt)
@@ -140,6 +141,7 @@ def interpolate_prompt_seriesA(animation_prompts, settings:ScheduleSettings):
     # Initialized outside of loop for nan check
     current_key = 0
     next_key = 0
+
     # For every keyframe prompt except the last
     for i in range(0, len(sorted_prompts) - 1):
         # Get current and next keyframe
@@ -178,7 +180,7 @@ def interpolate_prompt_seriesA(animation_prompts, settings:ScheduleSettings):
     index_offset = 0
 
     # Evaluate the current and next prompt's expressions
-    for i in range(0, len(cur_prompt_series)):
+    for i in range(settings.start_frame, min(settings.end_frame,len(cur_prompt_series))):
         cur_prompt_series[i] = prepare_batch_promptA(cur_prompt_series[i], settings, i)
         nxt_prompt_series[i] = prepare_batch_promptA(nxt_prompt_series[i], settings, i)
         if settings.print_output == True:
