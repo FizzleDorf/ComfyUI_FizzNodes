@@ -55,12 +55,22 @@ def parse_key_frames(string, max_frames):
     for match_object in string.split(","):
         frameParam = match_object.split(":")
         max_f = max_frames - 1  # needed for numexpr even though it doesn't look like it's in use.
-        frame = int(sanitize_value(frameParam[0])) if check_is_number(
-            sanitize_value(frameParam[0].strip())) else int(numexpr.evaluate(
-            frameParam[0].strip().replace("'", "", 1).replace('"', "", 1)[::-1].replace("'", "", 1).replace('"', "", 1)[::-1]))
+        frame_str = sanitize_value(frameParam[0].strip())
+
+        try:
+            if check_is_number(frame_str):
+                frame = int(frame_str)
+            else:
+                # Simplified expression evaluation
+                frame = int(numexpr.evaluate(frame_str))
+        except Exception as e:
+            raise RuntimeError(f"Error evaluating frame expression '{frame_str}': {e}")
+
         frames[frame] = frameParam[1].strip()
+
     if frames == {} and len(string) != 0:
         raise RuntimeError('Key Frame string not correctly formatted')
+
     return frames
 
 def batch_get_inbetweens(key_frames, max_frames, integer=False, interp_method='Linear', is_single_string=False):
