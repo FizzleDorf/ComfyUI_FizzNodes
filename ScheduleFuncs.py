@@ -33,6 +33,8 @@ class ScheduleSettings:
             pw_d: float,
             start_frame: int,
             end_frame:int,
+            batch_start:int,
+            batch_end:int,
             width: int,
             height: int,
             crop_w: int,
@@ -55,6 +57,8 @@ class ScheduleSettings:
         self.pw_d=pw_d
         self.start_frame=start_frame
         self.end_frame=end_frame
+        self.batch_start=batch_start
+        self.batch_end=batch_end
         self.width=width
         self.height=height
         self.crop_w=crop_w

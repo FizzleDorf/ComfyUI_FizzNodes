@@ -90,6 +90,8 @@ class PromptSchedule:
             pw_d=pw_d,
             start_frame=0,
             end_frame=0,
+            batch_start=0,
+            batch_end=0,
             width=None,
             height=None,
             crop_w=None,
@@ -116,8 +118,10 @@ class BatchPromptSchedule:
                 "optional": {
                     "pre_text": ("STRING", {"multiline": True, "forceInput": True}),
                     "app_text": ("STRING", {"multiline": True, "forceInput": True}),
-                    "start_frame": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, "display": "start_frame(print_only)", }),
-                    "end_frame": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, "display": "end_frame(print_only)",}),
+                    "start_frame": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1,}),
+                    "end_frame": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1,}),
+                    "batch_start": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1,}),
+                    "batch_end": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, }),
                     "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True}),
                     "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True}),
                     "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True}),
@@ -131,7 +135,7 @@ class BatchPromptSchedule:
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, text, max_frames, print_output, clip, start_frame, end_frame, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''
+    def animate(self, text, max_frames, print_output, clip, start_frame, end_frame, batch_start, batch_end, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''
     ):
         settings = ScheduleSettings(
             text_g=text,
@@ -149,6 +153,8 @@ class BatchPromptSchedule:
             pw_d=pw_d,
             start_frame=start_frame,
             end_frame=end_frame,
+            batch_start=batch_start,
+            batch_end=batch_end,
             width=None,
             height=None,
             crop_w=None,
@@ -179,6 +185,8 @@ class BatchPromptScheduleLatentInput:
                     "app_text": ("STRING", {"multiline": True, "forceInput": True}),
                     "start_frame": ("INT", {"default": 0.0, "min": 0, "max": 9999, "step": 1, "display": "start_frame(print_only)", }),
                     "end_frame": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, "display": "end_frame(print_only)", }),
+                    "batch_start": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, }),
+                    "batch_end": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, }),
                     "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
                     "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
                     "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
@@ -192,7 +200,7 @@ class BatchPromptScheduleLatentInput:
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, text, num_latents, print_output, clip, start_frame, end_frame, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''
+    def animate(self, text, num_latents, print_output, clip, start_frame, end_frame, batch_start, batch_end, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='', app_text=''
     ):
         settings = ScheduleSettings(
             text_g=text,
@@ -210,6 +218,8 @@ class BatchPromptScheduleLatentInput:
             pw_d=pw_d,
             start_frame=start_frame,
             end_frame=end_frame,
+            batch_start=batch_start,
+            batch_end=batch_end,
             width=None,
             height=None,
             crop_w=None,
@@ -261,6 +271,8 @@ class StringSchedule:
         pw_d = pw_d,
         start_frame = 0,
         end_frame=0,
+        batch_start=0,
+        batch_end=0,
         width = None,
         height = None,
         crop_w = None,
@@ -316,6 +328,8 @@ class BatchStringSchedule:
             pw_d=pw_d,
             start_frame=0,
             end_frame=0,
+            batch_start=0,
+            batch_end=0,
             width=None,
             height=None,
             crop_w=None,
@@ -381,6 +395,8 @@ class PromptScheduleEncodeSDXL:
             pw_d=pw_d,
             start_frame=0,
             end_frame=0,
+            batch_start=0,
+            batch_end=0,
             width=width,
             height=height,
             crop_w=crop_w,
@@ -445,6 +461,8 @@ class BatchPromptScheduleEncodeSDXL:
             pw_d=pw_d,
             start_frame=0,
             end_frame=0,
+            batch_start=0,
+            batch_end=0,
             width=width,
             height=height,
             crop_w=crop_w,
@@ -510,6 +528,8 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
             pw_d=pw_d,
             start_frame=0,
             end_frame=0,
+            batch_start=0,
+            batch_end=0,
             width=width,
             height=height,
             crop_w=crop_w,
@@ -597,6 +617,8 @@ class PromptScheduleNodeFlowEnd:
             pw_d=pw_d,
             start_frame=0,
             end_frame=0,
+            batch_start=0,
+            batch_end=0,
             width=None,
             height=None,
             crop_w=None,
@@ -617,6 +639,10 @@ class BatchPromptScheduleNodeFlowEnd:
                             },
                "optional": {"pre_text": ("STRING", {"multiline": False, "forceInput": True}),
                             "app_text": ("STRING", {"multiline": False, "forceInput": True}),
+                            "start_frame": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, }),
+                            "end_frame": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, }),
+                            "batch_start": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, }),
+                            "batch_end": ("INT", {"default": 0, "min": 0, "max": 9999, "step": 1, }),
                             "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True}),
                             "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True}),
                             "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True}),
@@ -630,7 +656,7 @@ class BatchPromptScheduleNodeFlowEnd:
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, text, max_frames, start_frame, end_frame, print_output, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='',
+    def animate(self, text, max_frames, start_frame, end_frame, batch_start, batch_end, print_output, clip, pw_a=0, pw_b=0, pw_c=0, pw_d=0, pre_text='',
                 app_text=''):
         if text[-1] == ",":
             text = text[:-1]
@@ -652,6 +678,8 @@ class BatchPromptScheduleNodeFlowEnd:
             pw_d=pw_d,
             start_frame=start_frame,
             end_frame=end_frame,
+            batch_start=batch_start,
+            batch_end=batch_end,
             width=None,
             height=None,
             crop_w=None,
