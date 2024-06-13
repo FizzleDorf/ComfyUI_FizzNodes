@@ -168,7 +168,48 @@ def batch_prompt_schedule_SDXL_latentInput(settings:ScheduleSettings,clip, laten
 
     return (p, n, latents,)
 
+def prompt_schedule_SD3(settings:ScheduleSettings,clip):
+    # modulus rollover when current frame exceeds max frames
+    settings.current_frame = settings.current_frame % settings.max_frames
 
+    # Clear whitespace and newlines from json
+    animation_prompts_G = process_input_text(settings.text_g)
+    animation_prompts_L = process_input_text(settings.text_l)
+    animation_prompts_T = process_input_text(settings.text_l)
+
+    # add pre_text and app_text then split the combined prompt into positive and negative prompts
+    posG, negG = batch_split_weighted_subprompts(animation_prompts_G, settings.pre_text_G, settings.app_text_G)
+    posL, negL = batch_split_weighted_subprompts(animation_prompts_L, settings.pre_text_L, settings.app_text_L)
+    posT, negT = batch_split_weighted_subprompts(animation_prompts_L, settings.pre_text_L, settings.app_text_L)
+
+    pc, pn, pw = BatchInterpolatePromptsSD3(posG, posL, clip, settings, )
+    nc, nn, nw = BatchInterpolatePromptsSD3(negG, negL, clip, settings, )
+
+    #apply composable diffusion to the current frame
+    p = addWeighted(pc[settings.current_frame], pn[settings.current_frame], pw[settings.current_frame])
+    n = addWeighted(nc[settings.current_frame], nn[settings.current_frame], nw[settings.current_frame])
+
+    return (p, n,)
+
+def batch_prompt_schedule_SD3(settings:ScheduleSettings,clip):
+
+    # Clear whitespace and newlines from json
+    animation_prompts_G = process_input_text(settings.text_g)
+    animation_prompts_L = process_input_text(settings.text_l)
+    animation_prompts_T = process_input_text(settings.text_l)
+
+    # add pre_text and app_text then split the combined prompt into positive and negative prompts
+    posG, negG = batch_split_weighted_subprompts(animation_prompts_G, settings.pre_text_G, settings.app_text_G)
+    posL, negL = batch_split_weighted_subprompts(animation_prompts_L, settings.pre_text_L, settings.app_text_L)
+    posT, negT = batch_split_weighted_subprompts(animation_prompts_L, settings.pre_text_L, settings.app_text_L)
+
+    #pc, pn, pw = BatchInterpolatePromptsSD3(posG, posL, clip, settings,)
+    #nc, nn, nw = BatchInterpolatePromptsSD3(negG, negL, clip, settings,)
+
+    #p = BatchPoolAnimConditioningSD3(pc, pn, pw)
+    #n = BatchPoolAnimConditioningSD3(nc, nn, nw)
+
+    return (p, n,)
 
 
 
