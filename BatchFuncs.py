@@ -444,9 +444,12 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
         return cur_prompt, nxt_prompt
 
     # in case there is only one keyed promt, set all prompts to that prompt
-    cur_prompt_series_G, nxt_prompt_series_G = constructPrompt(sorted_prompts_G, cur_prompt_series_G, nxt_prompt_series_G, settings.pre_text_G, settings.app_text_G)
-    cur_prompt_series_L, nxt_prompt_series_L = constructPrompt(sorted_prompts_G, cur_prompt_series_G,
-                                                               nxt_prompt_series_G, settings.pre_text_G, settings.app_text_G)
+    cur_prompt_series_G, nxt_prompt_series_G = constructPrompt(sorted_prompts_G, cur_prompt_series_G,
+                                                               nxt_prompt_series_G, settings.pre_text_G,
+                                                               settings.app_text_G)
+    cur_prompt_series_L, nxt_prompt_series_L = constructPrompt(sorted_prompts_L, cur_prompt_series_L,
+                                                               nxt_prompt_series_L, settings.pre_text_L,
+                                                               settings.app_text_L)
     if len(sorted_prompts_L) - 1 == 0:
         for i in range(0, len(cur_prompt_series_L) - 1):
             current_prompt_L = sorted_prompts_L[0][1]
@@ -578,8 +581,9 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
     if settings.print_output == True:
         # Show the to/from prompts with evaluated expressions for transparency.
         for i in range(0, settings.max_frames):
-            print("\n", "Max Frames: ", settings.max_frames, "\n", "Current Prompt G: ", cur_prompt_series_G[i],
+            print("\n", "Max Frames: ", settings.max_frames, "Curr Frame: ", i, "\n", "Current Prompt G: ",
+                  cur_prompt_series_G[i],
                   "\n", "Current Prompt L: ", cur_prompt_series_L[i], "\n", "Next Prompt G: ", nxt_prompt_series_G[i],
-                  "\n", "Next Prompt L : ", nxt_prompt_series_L[i],  "\n"), "\n", "Current weight: ", weight_series[i]
+                  "\n", "Next Prompt L : ", nxt_prompt_series_L[i], "\n", "Current weight: ", weight_series[i])
 
     return current_conds, next_conds, weight_series
