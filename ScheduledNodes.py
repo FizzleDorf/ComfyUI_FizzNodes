@@ -340,14 +340,14 @@ class PromptScheduleEncodeSDXL:
                 "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
                 "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0}),
                 "print_output":("BOOLEAN", {"default": False})
-        },
-            "optional": {
                 "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                 "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+        },
+            "optional": {
                 "pre_text_G": ("STRING", {"multiline": True, "forceInput": True}),
                 "app_text_G": ("STRING", {"multiline": True, "forceInput": True}),
                 "pre_text_L": ("STRING", {"multiline": True, "forceInput": True}),
@@ -364,7 +364,7 @@ class PromptScheduleEncodeSDXL:
 
     CATEGORY = "FizzNodes 📅🅕🅝/ScheduleNodes"
 
-    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, current_frame, print_output, pw_a, pw_b, pw_c, pw_d):
+    def animate(self, clip, text_g, text_l, width, height, crop_w, crop_h, target_width, target_height, max_frames, current_frame, print_output, app_text_G = '', app_text_L = '', pre_text_G = '', pre_text_L = '', pw_a=0, pw_b=0, pw_c=0, pw_d=0):
         settings = ScheduleSettings(
             text_g=text_g,
             pre_text_G=pre_text_G,
@@ -403,14 +403,15 @@ class BatchPromptScheduleEncodeSDXL:
                     "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
                     "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
                     "print_output":("BOOLEAN", {"default": False}),
-            },
-                "optional": {
                     "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                     "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                     "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                     "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                     "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                     "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+            },
+                "optional": {
+
                     "pre_text_G": ("STRING", {"multiline": True, "forceInput": True}),
                     "app_text_G": ("STRING", {"multiline": True, "forceInput": True}),
                     "pre_text_L": ("STRING", {"multiline": True, "forceInput": True}),
@@ -428,7 +429,7 @@ class BatchPromptScheduleEncodeSDXL:
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, max_frames, print_output, pw_a=0, pw_b=0, pw_c=0, pw_d=0):
+    def animate(self, clip, text_g, text_l, width, height, crop_w, crop_h, target_width, target_height, max_frames, print_output, app_text_G = '', app_text_L = '', pre_text_G = '', pre_text_L = '', pw_a=0, pw_b=0, pw_c=0, pw_d=0):
         settings = ScheduleSettings(
             text_g=text_g,
             pre_text_G=pre_text_G,
@@ -469,14 +470,14 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
                 "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
                 "num_latents": ("LATENT", ),
                 "print_output":("BOOLEAN", {"default": False}),
-        },
-            "optional": {
                 "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                 "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+        },
+            "optional": {
                 "pre_text_G": ("STRING", {"multiline": True, "forceInput": True}),
                 "app_text_G": ("STRING", {"multiline": True, "forceInput": True}),
                 "pre_text_L": ("STRING", {"multiline": True, "forceInput": True}),
@@ -493,7 +494,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, clip, width, height, crop_w, crop_h, target_width, target_height, text_g, text_l, app_text_G, app_text_L, pre_text_G, pre_text_L, num_latents, print_output, pw_a, pw_b, pw_c, pw_d):
+    def animate(self, clip, text_g, text_l, width, height, crop_w, crop_h, target_width, target_height, num_latents, print_output, app_text_G = '', app_text_L = '', pre_text_G = '', pre_text_L = '', pw_a=0, pw_b=0, pw_c=0, pw_d=0):
         settings = ScheduleSettings(
             text_g=text_g,
             pre_text_G=pre_text_G,

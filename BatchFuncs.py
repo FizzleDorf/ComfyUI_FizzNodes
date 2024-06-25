@@ -507,8 +507,8 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
             nxt_prompt_series_G[f] = ''
             weight_series[f] = current_weight
 
-            cur_prompt_series_G[f] += (str(current_prompt_G))
-            nxt_prompt_series_G[f] += (str(next_prompt_G))
+            cur_prompt_series_G[f] = (str(current_prompt_G))
+            nxt_prompt_series_G[f] = (str(next_prompt_G))
 
     # Reset outside of loop for nan check
     current_key = 0
@@ -554,7 +554,6 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
         # second loop to catch any nan runoff
         for f in range(current_key, next_key):
             next_weight = weight_step * (f - current_key)
-
             # add the appropriate prompts and weights to their respective containers.
             cur_prompt_series_L[f] = ''
             nxt_prompt_series_L[f] = ''
