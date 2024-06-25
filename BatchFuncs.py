@@ -490,8 +490,8 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
                 nxt_prompt_series_G[f] = ''
                 weight_series[f] = 0.0
 
-                cur_prompt_series_G[f] += (str(settings.pre_text_G) + " " + str(current_prompt_G) + " " + str(settings.app_text_G))
-                nxt_prompt_series_G[f] += (str(settings.pre_text_G) + " " + str(next_prompt_G) + " " + str(settings.app_text_G))
+                cur_prompt_series_G[f] += (str(current_prompt_G))
+                nxt_prompt_series_G[f] += (str(next_prompt_G))
 
                 weight_series[f] += current_weight
 
@@ -507,8 +507,8 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
             nxt_prompt_series_G[f] = ''
             weight_series[f] = current_weight
 
-            cur_prompt_series_G[f] += (str(settings.pre_text_G) + " " + str(current_prompt_G) + " " + str(settings.app_text_G))
-            nxt_prompt_series_G[f] += (str(settings.pre_text_G) + " " + str(next_prompt_G) + " " + str(settings.app_text_G))
+            cur_prompt_series_G[f] += (str(current_prompt_G))
+            nxt_prompt_series_G[f] += (str(next_prompt_G))
 
     # Reset outside of loop for nan check
     current_key = 0
@@ -543,8 +543,8 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
                 nxt_prompt_series_L[f] = ''
                 weight_series[f] = 0.0
 
-                cur_prompt_series_L[f] += (str(settings.pre_text_L) + " " + str(current_prompt_L) + " " + str(settings.app_text_L))
-                nxt_prompt_series_L[f] += (str(settings.pre_text_L) + " " + str(next_prompt_L) + " " + str(settings.app_text_L))
+                cur_prompt_series_L[f] += (str(current_prompt_L))
+                nxt_prompt_series_L[f] += (str(next_prompt_L))
 
                 weight_series[f] += current_weight
 
@@ -560,8 +560,8 @@ def BatchInterpolatePromptsSDXL(animation_promptsG, animation_promptsL, clip, se
             nxt_prompt_series_L[f] = ''
             weight_series[f] = current_weight
 
-            cur_prompt_series_L[f] += (str(settings.pre_text_L) + " " + str(current_prompt_L) + " " + str(settings.app_text_L))
-            nxt_prompt_series_L[f] += (str(settings.pre_text_L) + " " + str(next_prompt_L) + " " + str(settings.app_text_L))
+            cur_prompt_series_L[f] += (str(current_prompt_L))
+            nxt_prompt_series_L[f] += (str(next_prompt_L))
 
     # Evaluate the current and next prompt's expressions
     for i in range(0, settings.max_frames):
