@@ -339,7 +339,7 @@ class PromptScheduleEncodeSDXL:
                 "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
                 "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
                 "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0}),
-                "print_output":("BOOLEAN", {"default": False})
+                "print_output":("BOOLEAN", {"default": False}),
                 "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
