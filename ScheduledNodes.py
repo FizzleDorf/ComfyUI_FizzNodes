@@ -335,17 +335,17 @@ class PromptScheduleEncodeSDXL:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
-                "text_g": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
-                "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
-                "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
-                "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0}),
-                "print_output":("BOOLEAN", {"default": False}),
                 "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                 "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+                "text_g": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
+                "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
+                "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
+                "current_frame": ("INT", {"default": 0.0, "min": 0.0, "max": 999999.0, "step": 1.0}),
+                "print_output":("BOOLEAN", {"default": False}),
         },
             "optional": {
                 "pre_text_G": ("STRING", {"multiline": True, "forceInput": True}),
@@ -399,16 +399,17 @@ class BatchPromptScheduleEncodeSDXL:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
-                    "text_g": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
-                    "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
-                    "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
-                    "print_output":("BOOLEAN", {"default": False}),
                     "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                     "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                     "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                     "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                     "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                     "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+                    "text_g": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
+                    "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
+                    "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
+                    "print_output":("BOOLEAN", {"default": False}),
+
             },
                 "optional": {
 
@@ -466,16 +467,16 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
-                "text_g": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
-                "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
-                "num_latents": ("LATENT", ),
-                "print_output":("BOOLEAN", {"default": False}),
                 "width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_w": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                 "crop_h": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION}),
                 "target_width": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
                 "target_height": ("INT", {"default": 1024.0, "min": 0, "max": MAX_RESOLUTION}),
+                "text_g": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
+                "text_l": ("STRING", {"multiline": True, }), "clip": ("CLIP", ),
+                "num_latents": ("LATENT", ),
+                "print_output":("BOOLEAN", {"default": False}),
         },
             "optional": {
                 "pre_text_G": ("STRING", {"multiline": True, "forceInput": True}),
