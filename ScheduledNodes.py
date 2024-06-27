@@ -680,7 +680,6 @@ class BatchGLIGENSchedule:
                              "y": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
                              "max_frames": ("INT", {"default": 120.0, "min": 1.0, "max": 999999.0, "step": 1.0}),
                              "print_output":("BOOLEAN", {"default": False})},
-                # "forceInput": True}),},
                 "optional": {"pre_text": ("STRING", {"multiline": True, "forceInput": True}),
                              "app_text": ("STRING", {"multiline": True, "forceInput": True}),
                              "pw_a": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
