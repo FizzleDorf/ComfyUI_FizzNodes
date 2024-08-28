@@ -392,7 +392,7 @@ def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_s
     for i in range(settings.start_frame,settings.end_frame):
         interpolated_conditioning = addWeighted(cur_prompt_series[i],
                                                 nxt_prompt_series[i],
-                                                weight_series[i])
+                                                weight_series[i], max_size)
 
         interpolated_cond = interpolated_conditioning[0][0]
         interpolated_pooled = interpolated_conditioning[0][1].get("pooled_output")
