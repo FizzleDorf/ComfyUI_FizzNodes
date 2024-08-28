@@ -317,6 +317,15 @@ def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_serie
     pooled_out = []
     cond_out = []
     max_size = 0
+
+    if settings.end_frame == 0:
+        settings.end_frame = settings.max_frames
+        print("end_frame at 0, using max_frames instead!")
+
+    if settings.start_frame >= settings.end_frame:
+        settings.start_frame = 0
+        print("start_frame larger than or equal to end_frame, using max_frames instead!")
+
     if max_size == 0:
         for i in range(0, settings.end_frame):
             tokens = clip.tokenize(str(cur_prompt_series[i]))
@@ -384,6 +393,16 @@ def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_s
     pooled_out = []
     cond_out = []
     max_size = 0
+
+    if settings.end_frame == 0:
+        settings.end_frame = settings.max_frames
+        print("end_frame at 0, using max_frames instead!")
+
+    if settings.start_frame >= settings.end_frame:
+        settings.start_frame = 0
+        print("start_frame larger than or equal to end_frame, using max_frames instead!")
+
+
     if max_size == 0:
         for i in range(0, settings.end_frame):
             tokens = clip.tokenize(str(cur_prompt_series[i]))
