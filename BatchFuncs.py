@@ -380,7 +380,7 @@ def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series,
 
     return cond_out, pooled_out
 
-def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series, settings:ScheduleSettings):
+def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series, clip, settings:ScheduleSettings):
     pooled_out = []
     cond_out = []
     max_size = 0

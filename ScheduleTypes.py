@@ -144,8 +144,8 @@ def batch_prompt_schedule_SDXL(settings:ScheduleSettings,clip):
     pc, pn, pw = BatchInterpolatePromptsSDXL(posG, posL, clip, settings,)
     nc, nn, nw = BatchInterpolatePromptsSDXL(negG, negL, clip, settings,)
 
-    p = BatchPoolAnimConditioningSDXL(pc, pn, pw, settings)
-    n = BatchPoolAnimConditioningSDXL(nc, nn, nw, settings)
+    p = BatchPoolAnimConditioningSDXL(pc, pn, pw, clip, settings)
+    n = BatchPoolAnimConditioningSDXL(nc, nn, nw, clip, settings)
 
     return (p, n,)
 
@@ -163,8 +163,8 @@ def batch_prompt_schedule_SDXL_latentInput(settings:ScheduleSettings,clip, laten
     pc, pn, pw = BatchInterpolatePromptsSDXL(posG, posL, clip, settings)
     nc, nn, nw = BatchInterpolatePromptsSDXL(negG, negL, clip, settings)
 
-    p = BatchPoolAnimConditioningSDXL(pc, pn, pw, settings)
-    n = BatchPoolAnimConditioningSDXL(nc, nn, nw, settings)
+    p = BatchPoolAnimConditioningSDXL(pc, pn, pw, clip, settings)
+    n = BatchPoolAnimConditioningSDXL(nc, nn, nw, clip, settings)
 
     return (p, n, latents,)
 
