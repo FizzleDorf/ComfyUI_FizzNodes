@@ -313,16 +313,16 @@ def interpolate_prompt_series(animation_prompts, max_frames, start_frame, pre_te
     # if it is an in-between frame and the prompts differ, composable diffusion will be performed.
     return (cur_prompt_series, nxt_prompt_series, weight_series)
 
-def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip):
+def BatchPoolAnimConditioning(cur_prompt_series, nxt_prompt_series, weight_series, clip, settings:ScheduleSettings):
     pooled_out = []
     cond_out = []
     max_size = 0
     if max_size == 0:
-        for i in range(len(cur_prompt_series)):
+        for i in range(0, settings.end_frame):
             tokens = clip.tokenize(str(cur_prompt_series[i]))
             cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
             max_size = max(max_size, cond_to.shape[1])
-    for i in range(len(cur_prompt_series)):
+    for i in range(settings.start_frame, settings.end_frame):
         tokens = clip.tokenize(str(cur_prompt_series[i]))
         cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
 
@@ -380,11 +380,16 @@ def BatchGLIGENConditioning(cur_prompt_series, nxt_prompt_series, weight_series,
 
     return cond_out, pooled_out
 
-def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series):
+def BatchPoolAnimConditioningSDXL(cur_prompt_series, nxt_prompt_series, weight_series, settings:ScheduleSettings):
     pooled_out = []
     cond_out = []
-
-    for i in range(len(cur_prompt_series)):
+    max_size = 0
+    if max_size == 0:
+        for i in range(0, settings.end_frame):
+            tokens = clip.tokenize(str(cur_prompt_series[i]))
+            cond_to, pooled_to = clip.encode_from_tokens(tokens, return_pooled=True)
+            max_size = max(max_size, cond_to.shape[1])
+    for i in range(settings.start_frame,settings.end_frame):
         interpolated_conditioning = addWeighted(cur_prompt_series[i],
                                                 nxt_prompt_series[i],
                                                 weight_series[i])

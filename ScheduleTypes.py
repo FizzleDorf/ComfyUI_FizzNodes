@@ -46,8 +46,8 @@ def batch_prompt_schedule(settings:ScheduleSettings,clip):
     neg_cur_prompt, neg_nxt_prompt, weight = interpolate_prompt_seriesA(neg, settings)
 
     # Apply composable diffusion across the batch
-    p = BatchPoolAnimConditioning(pos_cur_prompt, pos_nxt_prompt, weight, clip, )
-    n = BatchPoolAnimConditioning(neg_cur_prompt, neg_nxt_prompt, weight, clip, )
+    p = BatchPoolAnimConditioning(pos_cur_prompt, pos_nxt_prompt, weight, clip, settings)
+    n = BatchPoolAnimConditioning(neg_cur_prompt, neg_nxt_prompt, weight, clip, settings)
 
     # return positive and negative conditioning as well as the current and next prompts for each
     return (p, n,)
@@ -63,13 +63,13 @@ def batch_prompt_schedule_latentInput(settings:ScheduleSettings,clip, latents):
     pos_cur_prompt, pos_nxt_prompt, weight = interpolate_prompt_seriesA(pos, settings)
 
     # Apply composable diffusion across the batch
-    p = BatchPoolAnimConditioning(pos_cur_prompt, pos_nxt_prompt, weight, clip)
+    p = BatchPoolAnimConditioning(pos_cur_prompt, pos_nxt_prompt, weight, clip, settings)
 
     # Interpolate the negative prompt weights over frames
     neg_cur_prompt, neg_nxt_prompt, weight = interpolate_prompt_seriesA(neg, settings)
 
     # Apply composable diffusion across the batch
-    n = BatchPoolAnimConditioning(neg_cur_prompt, neg_nxt_prompt, weight, clip)
+    n = BatchPoolAnimConditioning(neg_cur_prompt, neg_nxt_prompt, weight, clip, settings)
 
     return (p, n, latents,)
 
@@ -144,8 +144,8 @@ def batch_prompt_schedule_SDXL(settings:ScheduleSettings,clip):
     pc, pn, pw = BatchInterpolatePromptsSDXL(posG, posL, clip, settings,)
     nc, nn, nw = BatchInterpolatePromptsSDXL(negG, negL, clip, settings,)
 
-    p = BatchPoolAnimConditioningSDXL(pc, pn, pw)
-    n = BatchPoolAnimConditioningSDXL(nc, nn, nw)
+    p = BatchPoolAnimConditioningSDXL(pc, pn, pw, settings)
+    n = BatchPoolAnimConditioningSDXL(nc, nn, nw, settings)
 
     return (p, n,)
 
@@ -163,8 +163,8 @@ def batch_prompt_schedule_SDXL_latentInput(settings:ScheduleSettings,clip, laten
     pc, pn, pw = BatchInterpolatePromptsSDXL(posG, posL, clip, settings)
     nc, nn, nw = BatchInterpolatePromptsSDXL(negG, negL, clip, settings)
 
-    p = BatchPoolAnimConditioningSDXL(pc, pn, pw)
-    n = BatchPoolAnimConditioningSDXL(nc, nn, nw)
+    p = BatchPoolAnimConditioningSDXL(pc, pn, pw, settings)
+    n = BatchPoolAnimConditioningSDXL(nc, nn, nw, settings)
 
     return (p, n, latents,)
 
