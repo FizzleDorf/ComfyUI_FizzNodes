@@ -421,6 +421,10 @@ class BatchPromptScheduleEncodeSDXL:
                     "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
                     "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
                     "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
+                    "start_frame": (
+                    "INT", {"default": 0, "min": 0, "max": 9999, "step": 1, "display": "start_frame(print_only)", }),
+                    "end_frame": (
+                    "INT", {"default": 120, "min": 0, "max": 9999, "step": 1, "display": "end_frame(print_only)", }),
             }
         }
 
@@ -430,7 +434,7 @@ class BatchPromptScheduleEncodeSDXL:
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, clip, text_g, text_l, width, height, crop_w, crop_h, target_width, target_height, max_frames, print_output, app_text_G = '', app_text_L = '', pre_text_G = '', pre_text_L = '', pw_a=0, pw_b=0, pw_c=0, pw_d=0):
+    def animate(self, clip, text_g, text_l, width, height, crop_w, crop_h, target_width, target_height, max_frames, print_output, app_text_G = '', app_text_L = '', pre_text_G = '', pre_text_L = '', pw_a=0, pw_b=0, pw_c=0, pw_d=0, start_frame=0, end_frame=120):
         settings = ScheduleSettings(
             text_g=text_g,
             pre_text_G=pre_text_G,
@@ -445,8 +449,8 @@ class BatchPromptScheduleEncodeSDXL:
             pw_b=pw_b,
             pw_c=pw_c,
             pw_d=pw_d,
-            start_frame=0,
-            end_frame=max_frames,
+            start_frame=start_frame,
+            end_frame=end_frame,
             width=width,
             height=height,
             crop_w=crop_w,
@@ -487,6 +491,10 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
                 "pw_b": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
                 "pw_c": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
                 "pw_d": ("FLOAT", {"default": 0.0, "min": -9999.0, "max": 9999.0, "step": 0.1, "forceInput": True }),
+                "start_frame": (
+                "INT", {"default": 0, "min": 0, "max": 9999, "step": 1, "display": "start_frame(print_only)", }),
+                "end_frame": (
+                "INT", {"default": 120, "min": 0, "max": 9999, "step": 1, "display": "end_frame(print_only)", }),
              }
         }
     RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "LATENT",)# "CONDITIONING", "CONDITIONING", "CONDITIONING", "CONDITIONING",)
@@ -495,7 +503,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
 
-    def animate(self, clip, text_g, text_l, width, height, crop_w, crop_h, target_width, target_height, num_latents, print_output, app_text_G = '', app_text_L = '', pre_text_G = '', pre_text_L = '', pw_a=0, pw_b=0, pw_c=0, pw_d=0):
+    def animate(self, clip, text_g, text_l, width, height, crop_w, crop_h, target_width, target_height, num_latents, print_output, app_text_G = '', app_text_L = '', pre_text_G = '', pre_text_L = '', pw_a=0, pw_b=0, pw_c=0, pw_d=0, start_frame=0, end_frame=120):
         settings = ScheduleSettings(
             text_g=text_g,
             pre_text_G=pre_text_G,
@@ -510,8 +518,8 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
             pw_b=pw_b,
             pw_c=pw_c,
             pw_d=pw_d,
-            start_frame=0,
-            end_frame=max_frames,
+            start_frame=start_frame,
+            end_frame=end_frame,
             width=width,
             height=height,
             crop_w=crop_w,
