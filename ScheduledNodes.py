@@ -429,7 +429,7 @@ class BatchPromptScheduleEncodeSDXL:
         }
 
     RETURN_TYPES = ("CONDITIONING", "CONDITIONING",)# "CONDITIONING", "CONDITIONING", "CONDITIONING", "CONDITIONING",)
-    RETURN_NAMES = ("POS", "NEG", "POS_CUR", "NEG_CUR", "POS_NXT", "NEG_NXT",)
+    RETURN_NAMES = ("POS", "NEG")#, "POS_CUR", "NEG_CUR", "POS_NXT", "NEG_NXT",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
@@ -498,7 +498,7 @@ class BatchPromptScheduleEncodeSDXLLatentInput:
              }
         }
     RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "LATENT",)# "CONDITIONING", "CONDITIONING", "CONDITIONING", "CONDITIONING",)
-    RETURN_NAMES = ("POS", "NEG", "POS_CUR", "NEG_CUR", "POS_NXT", "NEG_NXT",)
+    RETURN_NAMES = ("POS", "NEG", "INPUT_LATENTS")#, "NEG_CUR", "POS_NXT", "NEG_NXT",)
     FUNCTION = "animate"
 
     CATEGORY = "FizzNodes 📅🅕🅝/BatchScheduleNodes"
