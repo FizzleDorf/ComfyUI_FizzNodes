@@ -95,6 +95,7 @@ class InitNodeFrame:
             }
         }
     RETURN_TYPES = ("FIZZFRAME","CONDITIONING","CONDITIONING",)
+    RETURN_NAMES = ("FIZZFRAME","POS_COND","NEG_COND",)
     FUNCTION = "create_frame"
 
     CATEGORY = "FizzNodes 📅🅕🅝/FrameNodes"
@@ -156,6 +157,7 @@ class NodeFrame:
             }
         }
     RETURN_TYPES = ("FIZZFRAME","CONDITIONING","CONDITIONING",)
+    RETURN_NAMES = ("FIZZFRAME","POS_COND","NEG_COND",)
     FUNCTION = "create_frame"
 
     CATEGORY = "FizzNodes 📅🅕🅝/FrameNodes"
